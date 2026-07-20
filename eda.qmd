@@ -1,0 +1,887 @@
+---
+title: "Prosperous But Disconnected?"
+subtitle: "Exploratory analysis of Australia in the OECD wellbeing data"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    code-fold: true
+    embed-resources: true
+execute:
+  warning: false
+  message: false
+---
+
+## Research Direction
+
+The challenge question is broad: **Is Australia doing well?**
+
+This exploratory report narrows it to a more specific question:
+
+> **Is Australia materially prosperous but socially disconnected compared with OECD peers?**
+
+Here, Australia is treated as "doing well" only if material advantages translate into social wellbeing.
+
+Operational definitions:
+
+- **Material prosperity:** disposable income per capita, median net wealth, employment rate.
+- **Social wellbeing:** lack of social support, life satisfaction, negative affect balance.
+- **Possible mechanism:** long hours in paid work.
+
+`Time spent in social interactions` is examined as context, but not included in the main score because it is sparse in this filtered extract.
+
+## Setup
+
+```{r}
+library(tidyverse)
+library(readxl)
+library(knitr)
+library(scales)
+
+theme_set(theme_minimal(base_size = 12))
+
+data_path <- "OECD Data.csv"
+definitions_path <- "oecd-well-being-database-definitions.pdf"
+abs_dir <- "General-Social-Survey-Data-2025"
+```
+
+## Data Overview
+
+The dataset is a tidy OECD current wellbeing table. Each row is a country-measure-year observation.
+
+Important columns:
+
+- `Reference area`: country name.
+- `Domain`: broad wellbeing domain.
+- `Measure`: specific wellbeing indicator.
+- `TIME_PERIOD`: observation year.
+- `OBS_VALUE`: numeric value.
+- `Unit of measure`: unit needed for interpretation.
+
+```{r}
+df <- read_csv(data_path, show_col_types = FALSE)
+
+overview <- tibble(
+  metric = c(
+    "rows",
+    "columns",
+    "countries",
+    "domains",
+    "measures",
+    "first_year",
+    "latest_year",
+    "non_missing_values",
+    "missing_values",
+    "definition_pdf_available"
+  ),
+  value = c(
+    nrow(df),
+    ncol(df),
+    n_distinct(df$`Reference area`),
+    n_distinct(df$Domain),
+    n_distinct(df$Measure),
+    min(df$TIME_PERIOD, na.rm = TRUE),
+    max(df$TIME_PERIOD, na.rm = TRUE),
+    sum(!is.na(df$OBS_VALUE)),
+    sum(is.na(df$OBS_VALUE)),
+    file.exists(definitions_path)
+  )
+)
+
+kable(overview)
+```
+
+```{r}
+df |>
+  head() |>
+  kable()
+```
+
+## Indicator Dictionary
+
+The supplied PDF is the formal codebook. The CSV also contains the key practical metadata: domain, measure, unit, and codes.
+
+```{r}
+measure_dictionary <- df |>
+  distinct(DOMAIN, Domain, MEASURE, Measure, UNIT_MEASURE, `Unit of measure`) |>
+  arrange(Domain, Measure)
+
+kable(measure_dictionary)
+```
+
+## Coverage
+
+The dataset is not a balanced panel. Measures have different year ranges and country coverage, so the cross-country comparison below uses each country's latest available value for each measure.
+
+```{r}
+coverage_by_measure <- df |>
+  group_by(Domain, Measure) |>
+  summarise(
+    first_year = min(TIME_PERIOD, na.rm = TRUE),
+    latest_year = max(TIME_PERIOD, na.rm = TRUE),
+    observations = sum(!is.na(OBS_VALUE)),
+    countries = n_distinct(`Reference area`),
+    missing_rate = mean(is.na(OBS_VALUE)),
+    .groups = "drop"
+  ) |>
+  arrange(Domain, Measure)
+
+kable(coverage_by_measure, digits = 3)
+```
+
+```{r}
+coverage_matrix <- df |>
+  filter(!is.na(OBS_VALUE)) |>
+  distinct(Measure, TIME_PERIOD) |>
+  mutate(present = 1)
+
+ggplot(coverage_matrix, aes(x = TIME_PERIOD, y = fct_rev(Measure), fill = factor(present))) +
+  geom_tile(color = "white", linewidth = 0.1) +
+  scale_fill_manual(values = c("1" = "#2f7d66"), guide = "none") +
+  labs(
+    title = "Indicator-year coverage: available observations in green",
+    x = "Year",
+    y = NULL
+  ) +
+  theme(panel.grid = element_blank())
+```
+
+## Australia: First Look
+
+```{r}
+aus <- df |>
+  filter(`Reference area` == "Australia")
+
+aus_latest <- aus |>
+  filter(!is.na(OBS_VALUE)) |>
+  arrange(Measure, TIME_PERIOD) |>
+  group_by(Measure) |>
+  slice_tail(n = 1) |>
+  ungroup() |>
+  select(Domain, Measure, TIME_PERIOD, OBS_VALUE, `Unit of measure`) |>
+  arrange(Domain, Measure)
+
+kable(aus_latest, digits = 2)
+```
+
+```{r}
+aus_changes <- aus |>
+  filter(!is.na(OBS_VALUE)) |>
+  arrange(Measure, TIME_PERIOD) |>
+  group_by(Measure) |>
+  summarise(
+    Domain = last(Domain),
+    first_year = first(TIME_PERIOD),
+    first_value = first(OBS_VALUE),
+    latest_year = last(TIME_PERIOD),
+    latest_value = last(OBS_VALUE),
+    raw_change = latest_value - first_value,
+    unit = last(`Unit of measure`),
+    .groups = "drop"
+  ) |>
+  arrange(Domain, Measure)
+
+kable(aus_changes, digits = 2)
+```
+
+## Cross-Country Percentile Scores
+
+To compare different indicators, each latest country-measure value is converted to a percentile score from 0 to 100.
+
+- 100 means best among countries for that measure.
+- 0 means worst among countries for that measure.
+- Direction is handled explicitly. For example, higher income is better, but lower lack of social support is better.
+
+```{r}
+positive_is_better <- c(
+  "Households and NPISHs net adjusted disposable income per capita",
+  "Median net wealth",
+  "Housing affordability",
+  "Life expectancy at birth",
+  "Student mathematics skills",
+  "Time spent in social interactions",
+  "Life satisfaction",
+  "Employment rate",
+  "Time off",
+  "Voter turnout"
+)
+
+negative_is_better <- c(
+  "Top average household disposable income quintile",
+  "Households living in overcrowded conditions",
+  "Deaths from suicide, alcohol, drugs",
+  "Lack of social support",
+  "Not having a say in government",
+  "Exposed to air pollution",
+  "Exposure to extreme temperature",
+  "Negative affect balance",
+  "Gender wage gap",
+  "Long hours in paid work",
+  "Gender gap in working hours"
+)
+
+missing_direction <- setdiff(unique(df$Measure), c(positive_is_better, negative_is_better))
+stopifnot(length(missing_direction) == 0)
+```
+
+```{r}
+latest_country <- df |>
+  filter(!is.na(OBS_VALUE)) |>
+  arrange(Measure, `Reference area`, TIME_PERIOD) |>
+  group_by(Measure, `Reference area`) |>
+  slice_tail(n = 1) |>
+  ungroup() |>
+  mutate(
+    direction = if_else(Measure %in% positive_is_better, 1, -1),
+    score_value = OBS_VALUE * direction
+  ) |>
+  group_by(Measure) |>
+  mutate(
+    rank = min_rank(desc(score_value)),
+    countries_compared = n(),
+    percentile_score = 100 * (countries_compared - rank) / (countries_compared - 1)
+  ) |>
+  ungroup()
+
+aus_scores <- latest_country |>
+  filter(`Reference area` == "Australia") |>
+  select(
+    Domain,
+    Measure,
+    TIME_PERIOD,
+    OBS_VALUE,
+    `Unit of measure`,
+    rank,
+    countries_compared,
+    percentile_score
+  ) |>
+  arrange(desc(percentile_score))
+
+kable(aus_scores, digits = 2)
+```
+
+```{r}
+domain_scores <- aus_scores |>
+  group_by(Domain) |>
+  summarise(
+    mean_percentile = mean(percentile_score, na.rm = TRUE),
+    indicators = n(),
+    .groups = "drop"
+  ) |>
+  arrange(desc(mean_percentile))
+
+kable(domain_scores, digits = 1)
+```
+
+```{r}
+aus_scores |>
+  mutate(
+    Measure = str_wrap(Measure, width = 45),
+    Measure = fct_reorder(Measure, percentile_score),
+    score_group = if_else(percentile_score >= 50, "Above median", "Below median")
+  ) |>
+  ggplot(aes(x = percentile_score, y = Measure, fill = score_group)) +
+  geom_col() +
+  geom_vline(xintercept = 50, linetype = "dashed", color = "#555555") +
+  scale_fill_manual(values = c("Above median" = "#2f7d66", "Below median" = "#b44438"), guide = "none") +
+  scale_x_continuous(limits = c(0, 100)) +
+  labs(
+    title = "Australia's strongest and weakest latest indicators",
+    x = "Latest percentile score (100 = best among countries)",
+    y = NULL
+  )
+```
+
+## Focused Measures
+
+```{r}
+material_measures <- c(
+  "Households and NPISHs net adjusted disposable income per capita",
+  "Median net wealth",
+  "Employment rate"
+)
+
+social_measures <- c(
+  "Lack of social support",
+  "Life satisfaction",
+  "Negative affect balance"
+)
+
+mechanism_measures <- c(
+  "Long hours in paid work",
+  "Time spent in social interactions"
+)
+
+focused_measures <- c(material_measures, social_measures, mechanism_measures)
+
+focused_coverage <- df |>
+  filter(Measure %in% focused_measures) |>
+  group_by(Domain, Measure) |>
+  summarise(
+    countries = n_distinct(`Reference area`),
+    first_year = min(TIME_PERIOD, na.rm = TRUE),
+    latest_year = max(TIME_PERIOD, na.rm = TRUE),
+    observations = sum(!is.na(OBS_VALUE)),
+    .groups = "drop"
+  ) |>
+  arrange(Domain, Measure)
+
+kable(focused_coverage)
+```
+
+## Material And Social Scores
+
+Rules:
+
+- Countries need at least 2 of 3 material indicators and 2 of 3 social indicators to be included.
+- Scores are unweighted means because this is exploratory, not an official index.
+- The gap is `social score - material score`.
+
+```{r}
+score_wide <- latest_country |>
+  select(`Reference area`, Measure, percentile_score) |>
+  pivot_wider(names_from = Measure, values_from = percentile_score)
+
+raw_wide <- latest_country |>
+  select(`Reference area`, Measure, OBS_VALUE) |>
+  pivot_wider(names_from = Measure, values_from = OBS_VALUE)
+
+prosperity_social <- score_wide |>
+  transmute(
+    `Reference area`,
+    material_score = rowMeans(across(all_of(material_measures)), na.rm = TRUE),
+    material_indicators = rowSums(!is.na(across(all_of(material_measures)))),
+    social_score = rowMeans(across(all_of(social_measures)), na.rm = TRUE),
+    social_indicators = rowSums(!is.na(across(all_of(social_measures)))),
+    long_hours_score = `Long hours in paid work`
+  ) |>
+  left_join(
+    raw_wide |>
+      select(
+        `Reference area`,
+        long_hours_raw_pct = `Long hours in paid work`,
+        social_interaction_hours = `Time spent in social interactions`
+      ),
+    by = "Reference area"
+  ) |>
+  mutate(social_minus_material_gap = social_score - material_score)
+
+analysis_scores <- prosperity_social |>
+  filter(material_indicators >= 2, social_indicators >= 2) |>
+  mutate(
+    material_rank = min_rank(desc(material_score)),
+    social_rank = min_rank(desc(social_score)),
+    gap_rank_most_negative = min_rank(social_minus_material_gap)
+  ) |>
+  arrange(social_minus_material_gap)
+
+summary_scores <- analysis_scores |>
+  filter(`Reference area` == "Australia") |>
+  select(
+    material_score,
+    material_rank,
+    social_score,
+    social_rank,
+    social_minus_material_gap,
+    gap_rank_most_negative,
+    long_hours_score,
+    long_hours_raw_pct
+  )
+
+kable(summary_scores, digits = 1)
+```
+
+```{r}
+analysis_scores |>
+  arrange(social_minus_material_gap) |>
+  slice_head(n = 12) |>
+  select(
+    `Reference area`,
+    material_score,
+    social_score,
+    social_minus_material_gap,
+    material_rank,
+    social_rank,
+    long_hours_raw_pct
+  ) |>
+  kable(digits = 1)
+```
+
+## Main Visual
+
+If Australia is materially strong but socially weaker, it should sit in the lower-right area of the chart.
+
+```{r}
+plot_scores <- analysis_scores
+au <- plot_scores |>
+  filter(`Reference area` == "Australia")
+
+x_med <- median(plot_scores$material_score, na.rm = TRUE)
+y_med <- median(plot_scores$social_score, na.rm = TRUE)
+
+ggplot(plot_scores, aes(x = material_score, y = social_score)) +
+  geom_point(aes(size = long_hours_raw_pct), color = "#4f7f9f", alpha = 0.65) +
+  geom_point(data = au, color = "#d64b3c", size = 5, shape = 21, fill = "#d64b3c", stroke = 0.7) +
+  geom_text(data = au, aes(label = "Australia"), nudge_x = 3.5, nudge_y = 3.5, fontface = "bold") +
+  geom_vline(xintercept = x_med, linetype = "dashed", color = "#555555") +
+  geom_hline(yintercept = y_med, linetype = "dashed", color = "#555555") +
+  annotate("text", x = 5, y = 95, label = "socially strong\nmaterially weaker", hjust = 0, vjust = 1, color = "#555555") +
+  annotate("text", x = 68, y = 95, label = "materially and\nsocially strong", hjust = 0, vjust = 1, color = "#555555") +
+  annotate("text", x = 68, y = 8, label = "materially strong\nsocially weaker", hjust = 0, vjust = 0, color = "#555555") +
+  annotate("text", x = 5, y = 8, label = "weaker on both", hjust = 0, vjust = 0, color = "#555555") +
+  scale_x_continuous(limits = c(0, 100)) +
+  scale_y_continuous(limits = c(0, 100)) +
+  scale_size_continuous(range = c(2, 9), guide = "none") +
+  labs(
+    title = "Australia appears materially prosperous but socially weaker",
+    x = "Material prosperity score, latest OECD percentiles",
+    y = "Social wellbeing score, latest OECD percentiles"
+  )
+```
+
+## Gap Ranking
+
+```{r}
+gap_plot <- analysis_scores |>
+  arrange(social_minus_material_gap) |>
+  slice_head(n = 15) |>
+  mutate(
+    country_label = fct_reorder(`Reference area`, social_minus_material_gap),
+    highlight = if_else(`Reference area` == "Australia", "Australia", "Other")
+  )
+
+ggplot(gap_plot, aes(x = social_minus_material_gap, y = country_label, fill = highlight)) +
+  geom_col() +
+  geom_vline(xintercept = 0, color = "#333333", linewidth = 0.4) +
+  scale_fill_manual(values = c("Australia" = "#d64b3c", "Other" = "#6f8796"), guide = "none") +
+  labs(
+    title = "Largest material-social wellbeing gaps among retained OECD countries",
+    x = "Social score minus material score",
+    y = NULL
+  )
+```
+
+```{r}
+au_detail <- analysis_scores |>
+  filter(`Reference area` == "Australia") |>
+  slice(1)
+
+tibble(
+  metric = c(
+    "countries_retained",
+    "Australia material score",
+    "Australia material rank",
+    "Australia social score",
+    "Australia social rank",
+    "Australia social-minus-material gap",
+    "Australia gap rank",
+    "Australia long-hours raw value"
+  ),
+  value = c(
+    as.character(nrow(analysis_scores)),
+    as.character(round(au_detail$material_score, 1)),
+    paste0(as.integer(au_detail$material_rank), " of ", nrow(analysis_scores)),
+    as.character(round(au_detail$social_score, 1)),
+    paste0(as.integer(au_detail$social_rank), " of ", nrow(analysis_scores)),
+    as.character(round(au_detail$social_minus_material_gap, 1)),
+    paste0(as.integer(au_detail$gap_rank_most_negative), " most negative of ", nrow(analysis_scores)),
+    paste0(round(au_detail$long_hours_raw_pct, 2), "%")
+  )
+) |>
+  kable()
+```
+
+## Statistical Check: Is Australia's Gap Unusual?
+
+The score gap is descriptive, so this section adds two simple checks.
+
+**Check 1: Empirical rank test.** If country labels were exchangeable, how often would another retained country have a material-social gap at least as negative as Australia's?
+
+**Check 2: Regression residual.** Across countries, regress social score on material score, then ask whether Australia is below the social score expected for its material score. This is not a causal model; it is a benchmark for whether Australia is unusually socially weak after accounting for material score.
+
+```{r}
+gap_empirical_p <- mean(
+  analysis_scores$social_minus_material_gap <=
+    analysis_scores$social_minus_material_gap[analysis_scores$`Reference area` == "Australia"]
+)
+
+social_model <- lm(social_score ~ material_score, data = analysis_scores)
+
+model_augmented <- analysis_scores |>
+  mutate(
+    predicted_social_score = predict(social_model),
+    residual = resid(social_model),
+    studentised_residual = rstudent(social_model)
+  )
+
+au_model <- model_augmented |>
+  filter(`Reference area` == "Australia")
+
+residual_empirical_p <- mean(model_augmented$residual <= au_model$residual)
+
+prediction_interval <- predict(
+  social_model,
+  newdata = au_model,
+  interval = "prediction",
+  level = 0.95
+) |>
+  as_tibble()
+
+statistical_summary <- tibble(
+  check = c(
+    "Empirical one-sided p-value for Australia having a gap this negative",
+    "Australia observed social score",
+    "Australia predicted social score from material score",
+    "Australia regression residual",
+    "Empirical one-sided p-value for Australia residual this negative",
+    "95% prediction interval lower bound",
+    "95% prediction interval upper bound"
+  ),
+  value = c(
+    round(gap_empirical_p, 3),
+    round(au_model$social_score, 1),
+    round(au_model$predicted_social_score, 1),
+    round(au_model$residual, 1),
+    round(residual_empirical_p, 3),
+    round(prediction_interval$lwr, 1),
+    round(prediction_interval$upr, 1)
+  )
+)
+
+kable(statistical_summary)
+```
+
+```{r}
+model_augmented |>
+  arrange(residual) |>
+  slice_head(n = 10) |>
+  select(
+    `Reference area`,
+    material_score,
+    social_score,
+    predicted_social_score,
+    residual,
+    studentised_residual
+  ) |>
+  kable(digits = 2)
+```
+
+Interpretation:
+
+- Australia's raw material-social gap is unusually negative in this comparison set: only **1 of 38** retained countries has a gap at least this negative, giving an empirical one-sided p-value of about **0.026**.
+- The regression check is more conservative. Australia is below the social score predicted from its material score, but not outside the 95% prediction interval. This means the report should claim **a large and unusual descriptive gap**, not a definitive statistical outlier after modelling.
+
+## Which Indicators Create Australia's Gap?
+
+```{r}
+focused_australia_table <- latest_country |>
+  filter(`Reference area` == "Australia", Measure %in% focused_measures) |>
+  select(
+    Domain,
+    Measure,
+    TIME_PERIOD,
+    OBS_VALUE,
+    `Unit of measure`,
+    rank,
+    countries_compared,
+    percentile_score
+  ) |>
+  arrange(desc(percentile_score))
+
+kable(focused_australia_table, digits = 2)
+```
+
+## Is Australia Becoming More Socially Unsupported?
+
+The cross-country comparison shows Australia's current gap. To support the word "becoming", we also need Australia's time trend. Life satisfaction is sparse for Australia in this filtered file, so the trend claim should rely more on lack of social support and negative affect.
+
+```{r}
+trend_measures <- c(
+  "Lack of social support",
+  "Negative affect balance",
+  "Long hours in paid work",
+  "Life satisfaction",
+  "Households and NPISHs net adjusted disposable income per capita",
+  "Employment rate"
+)
+
+trend_aus <- df |>
+  filter(`Reference area` == "Australia", Measure %in% trend_measures, !is.na(OBS_VALUE)) |>
+  arrange(Measure, TIME_PERIOD)
+
+trend_summary <- trend_aus |>
+  group_by(Measure) |>
+  summarise(
+    first_year = first(TIME_PERIOD),
+    first_value = first(OBS_VALUE),
+    latest_year = last(TIME_PERIOD),
+    latest_value = last(OBS_VALUE),
+    raw_change = latest_value - first_value,
+    unit = last(`Unit of measure`),
+    .groups = "drop"
+  )
+
+kable(trend_summary, digits = 2)
+```
+
+```{r}
+ggplot(trend_aus, aes(x = TIME_PERIOD, y = OBS_VALUE)) +
+  geom_line(color = "#2f6f8f", linewidth = 0.8) +
+  geom_point(color = "#2f6f8f", size = 1.8) +
+  facet_wrap(vars(Measure), scales = "free_y", ncol = 2) +
+  labs(
+    title = "Australia trends: material conditions improved, social strain indicators did not clearly improve",
+    x = "Year",
+    y = "Value"
+  )
+```
+
+## OECD Diagnosis
+
+The focused EDA supports a strong challenge storyline:
+
+> **Australia is doing well materially, but its social wellbeing is much weaker than its material position would suggest.**
+
+Evidence from the latest OECD values in this extract:
+
+- Australia is near the top of retained countries on the material score.
+- Australia is much lower on the social wellbeing score.
+- Australia's `social score - material score` gap is one of the most negative in the comparison set.
+- Long paid hours are a plausible pressure mechanism and can be discussed as a work/time constraint on connection.
+
+Important limitations:
+
+- The score is an EDA index, not an official OECD index.
+- Latest available values are from different years depending on the indicator.
+- `Time spent in social interactions` is too sparse for the main cross-country score.
+- Life satisfaction is sparse for Australia in this filtered file, so the trend claim should lean more heavily on lack of social support and negative affect.
+
+These limitations motivate a second step rather than a separate side analysis. The OECD result gives an **international diagnosis**: Australia looks materially strong but socially weaker. The natural follow-up is:
+
+> Is that diagnosis visible in independent Australian data, or is it only an artefact of sparse OECD social indicators?
+
+## ABS Validation: Is The OECD Signal Visible Within Australia?
+
+The **ABS General Social Survey 2025** is used as a local validation check. It should not be merged into the OECD score because it is Australia-only and has a different survey design. Instead, it tests whether the OECD social-disconnection signal is consistent with Australian national trends.
+
+This section uses:
+
+- `GSSDC20.xlsx`: social experiences by sex/gender across 2006, 2010, 2014, 2019, 2020 and 2025.
+- `GSSDC08.xlsx`: overall life satisfaction across 2014, 2019, 2020 and 2025.
+
+The analysis below uses the **total persons** columns only.
+
+```{r}
+parse_gss20_social_trends <- function() {
+  raw <- read_excel(
+    file.path(abs_dir, "GSSDC20.xlsx"),
+    sheet = "Table 20.1 Proportion",
+    col_names = FALSE,
+    col_types = "text"
+  )
+
+  years <- as.integer(unlist(raw[4, c(2, 5, 8, 11, 14, 17)]))
+  total_cols <- c(4, 7, 10, 13, 16, 19)
+
+  indicator_rows <- c(
+    "Volunteered through an organisation" = 8,
+    "Involved in social groups" = 11,
+    "Involved in community support groups" = 12,
+    "Involved in civic/political groups" = 13,
+    "Able to have a say most/all of the time" = 15,
+    "Weekly face-to-face contact with family/friends" = 19,
+    "Weekly other contact with family/friends" = 20,
+    "Support in crisis outside household" = 21,
+    "Family/friends outside household to confide in" = 22,
+    "Most people can be trusted" = 29,
+    "Always/often rushed for time" = 34
+  )
+
+  map_dfr(names(indicator_rows), function(indicator_name) {
+    values <- suppressWarnings(as.numeric(unlist(raw[indicator_rows[[indicator_name]], total_cols])))
+    tibble(
+      source = "ABS GSS 2025 data cube 20",
+      indicator = indicator_name,
+      year = years,
+      value = values,
+      unit = "Proportion (%)"
+    )
+  })
+}
+
+parse_gss20_social_moe <- function() {
+  raw <- read_excel(
+    file.path(abs_dir, "GSSDC20.xlsx"),
+    sheet = "Table 20.2, MoE proportion",
+    col_names = FALSE,
+    col_types = "text"
+  )
+
+  years <- as.integer(unlist(raw[4, c(2, 5, 8, 11, 14, 17)]))
+  total_cols <- c(4, 7, 10, 13, 16, 19)
+
+  indicator_rows <- c(
+    "Volunteered through an organisation" = 8,
+    "Involved in social groups" = 11,
+    "Involved in community support groups" = 12,
+    "Involved in civic/political groups" = 13,
+    "Able to have a say most/all of the time" = 15,
+    "Weekly face-to-face contact with family/friends" = 19,
+    "Weekly other contact with family/friends" = 20,
+    "Support in crisis outside household" = 21,
+    "Family/friends outside household to confide in" = 22,
+    "Most people can be trusted" = 29,
+    "Always/often rushed for time" = 34
+  )
+
+  map_dfr(names(indicator_rows), function(indicator_name) {
+    values <- suppressWarnings(as.numeric(unlist(raw[indicator_rows[[indicator_name]], total_cols])))
+    tibble(
+      indicator = indicator_name,
+      year = years,
+      moe_95 = values
+    )
+  })
+}
+
+parse_gss8_life_satisfaction <- function() {
+  raw <- read_excel(
+    file.path(abs_dir, "GSSDC08.xlsx"),
+    sheet = "Table 8.1 Mean",
+    col_names = FALSE,
+    col_types = "text"
+  )
+
+  tibble(
+    source = "ABS GSS 2025 data cube 8",
+    indicator = "Overall life satisfaction",
+    year = as.integer(unlist(raw[4, c(2, 5, 8, 11)])),
+    value = as.numeric(unlist(raw[24, c(4, 7, 10, 13)])),
+    unit = "Mean score out of 10"
+  )
+}
+
+abs_social_trends <- parse_gss20_social_trends()
+abs_social_moe <- parse_gss20_social_moe()
+abs_life_satisfaction <- parse_gss8_life_satisfaction()
+
+abs_key_trends <- bind_rows(
+  abs_social_trends |>
+    filter(indicator %in% c(
+      "Volunteered through an organisation",
+      "Involved in social groups",
+      "Weekly face-to-face contact with family/friends",
+      "Support in crisis outside household",
+      "Most people can be trusted",
+      "Always/often rushed for time"
+    )),
+  abs_life_satisfaction
+)
+
+abs_key_trends |>
+  pivot_wider(names_from = year, values_from = value) |>
+  kable(digits = 1)
+```
+
+The ABS data gives a more local test of the OECD result. If Australia is genuinely socially weaker than its material position suggests, we should see weakness or deterioration in domestic social connection indicators. The ABS data points in that direction, especially after 2019.
+
+```{r}
+abs_plot_data <- abs_key_trends |>
+  filter(indicator != "Support in crisis outside household") |>
+  mutate(indicator = str_wrap(indicator, 34))
+
+ggplot(abs_plot_data, aes(x = year, y = value)) +
+  geom_line(color = "#2f6f8f", linewidth = 0.8) +
+  geom_point(color = "#2f6f8f", size = 2) +
+  facet_wrap(vars(indicator), scales = "free_y", ncol = 2) +
+  labs(
+    title = "ABS General Social Survey: social connection indicators weakened after 2019",
+    subtitle = "Total persons; values are proportions unless life satisfaction is shown as a mean out of 10",
+    x = "Year",
+    y = "Value"
+  )
+```
+
+```{r}
+abs_change_summary <- abs_key_trends |>
+  filter(year %in% c(2019, 2025)) |>
+  select(indicator, year, value, unit) |>
+  pivot_wider(names_from = year, values_from = value, names_prefix = "value_") |>
+  mutate(change_2019_to_2025 = value_2025 - value_2019) |>
+  arrange(change_2019_to_2025)
+
+kable(abs_change_summary, digits = 1)
+```
+
+The ABS data cubes include 95% margins of error for the proportion estimates in `GSSDC20.xlsx`. For the 2019-to-2025 changes, the next table converts margins of error to approximate standard errors and tests whether the change is distinguishable from zero. This assumes independent survey estimates across years, so it should be treated as an approximate check rather than a full survey-design analysis.
+
+```{r}
+abs_change_tests <- abs_social_trends |>
+  filter(
+    indicator %in% c(
+      "Volunteered through an organisation",
+      "Involved in social groups",
+      "Weekly face-to-face contact with family/friends",
+      "Support in crisis outside household",
+      "Most people can be trusted",
+      "Always/often rushed for time"
+    ),
+    year %in% c(2019, 2025)
+  ) |>
+  select(indicator, year, estimate = value) |>
+  left_join(abs_social_moe, by = c("indicator", "year")) |>
+  pivot_wider(names_from = year, values_from = c(estimate, moe_95)) |>
+  mutate(
+    change_2019_to_2025 = estimate_2025 - estimate_2019,
+    se_change = sqrt((moe_95_2019 / 1.96)^2 + (moe_95_2025 / 1.96)^2),
+    z_statistic = change_2019_to_2025 / se_change,
+    p_value_two_sided = 2 * pnorm(-abs(z_statistic)),
+    ci_low = change_2019_to_2025 - 1.96 * se_change,
+    ci_high = change_2019_to_2025 + 1.96 * se_change,
+    evidence = if_else(p_value_two_sided < 0.05, "clear change", "not clear at 5%")
+  ) |>
+  arrange(change_2019_to_2025)
+
+abs_change_tests |>
+  select(
+    indicator,
+    estimate_2019,
+    estimate_2025,
+    change_2019_to_2025,
+    ci_low,
+    ci_high,
+    p_value_two_sided,
+    evidence
+  ) |>
+  kable(digits = 3)
+```
+
+Key ABS validation evidence:
+
+- Weekly face-to-face contact with family or friends was **67.1% in 2019** and **52.2% in 2025**.
+- Volunteering through an organisation was **28.8% in 2019** and **22.4% in 2025**.
+- Social group involvement was **50.0% in 2019** and **44.7% in 2025**.
+- Overall life satisfaction was **7.5 in 2019** and **7.1 in 2025**.
+- Support in a crisis remained high, at **94.2% in 2019** and **92.9% in 2025**.
+- Using ABS margins of error, the declines in face-to-face contact, volunteering, social group involvement and trust are distinguishable from sampling uncertainty at the 5% level. The small fall in crisis support is not.
+
+## Synthesis
+
+The two datasets now play complementary roles:
+
+- **OECD** provides the international benchmark: Australia ranks high materially but much lower socially.
+- **ABS** provides domestic validation: everyday connection, participation and life satisfaction have weakened since 2019.
+
+Together, they refine the answer to "Is Australia doing well?":
+
+> Australia is doing well materially, but the evidence is weaker for social wellbeing. It does not look like a country with no support system: crisis support remains high. The sharper concern is that **regular connection, participation and satisfaction have weakened despite material prosperity**.
+
+Polished report question:
+
+> **Prosperous but disconnected? Does Australia's material wellbeing translate into social support and lived wellbeing compared with OECD peers?**
+
+## Reproducibility
+
+```{r}
+sessionInfo()
+```
