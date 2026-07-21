@@ -163,14 +163,26 @@ events[["heat_anomaly_postfire", "ndvi_recovery_ratio", "sightings_recovery_rati
 
 ```{python}
 fig, axes = plt.subplots(1, 3, figsize=(15, 4))
+
 axes[0].hist(events["heat_anomaly_postfire"], bins=30, color="steelblue")
-axes[0].set_title("post-fire heat anomaly\n(extra hot days/yr >=35C)")
+axes[0].set_title("Post-Fire Heat Anomaly")
+axes[0].set_xlabel("Extra hot days/yr (>=35C) vs. division's own baseline")
+axes[0].set_ylabel("Number of fire events")
+
 axes[1].hist(events["ndvi_recovery_ratio"], bins=30, color="seagreen")
 axes[1].axvline(1.0, color="grey", ls="--")
-axes[1].set_title("NDVI recovery ratio")
+axes[1].set_title("Vegetation (NDVI) Recovery Ratio")
+axes[1].set_xlabel("NDVI recovery ratio (1.0 = fully recovered to pre-fire baseline)")
+axes[1].set_ylabel("Number of fire events")
+
 axes[2].hist(events["recovery_gap"], bins=30, color="firebrick")
 axes[2].axvline(0, color="grey", ls="--")
-axes[2].set_title("recovery gap\n(0 = vegetation and wildlife recovered equally)")
+axes[2].set_title("Recovery Gap Distribution")
+axes[2].set_xlabel("Recovery gap: log(NDVI ratio) - log(sightings ratio)")
+axes[2].set_ylabel("Number of fire events")
+
+fig.suptitle("Figure 1. Distributions of heat exposure, vegetation recovery, and the recovery gap "
+             f"({len(events)} major fire events)", y=1.04)
 plt.tight_layout()
 plt.show()
 ```
@@ -201,22 +213,31 @@ geo = admin2.merge(div_agg[["ADM2_NAME"]], on="ADM2_NAME", how="inner").reset_in
 geo["geometry"] = geo.geometry.simplify(0.01, preserve_topology=True)  # keeps the embedded map lightweight
 geojson = json.loads(geo.to_json())
 
+div_agg_labelled = div_agg.rename(columns={
+    "ADM1_NAME": "State",
+    "mean_recovery_gap": "Mean recovery gap",
+    "mean_heat_anomaly": "Mean post-fire heat anomaly (extra hot days/yr)",
+    "mean_ndvi_ratio": "Mean NDVI recovery ratio",
+    "mean_sightings_ratio": "Mean sightings recovery ratio",
+    "n_events": "Number of major fire events",
+})
+
 fig_map = px.choropleth_map(
-    div_agg,
+    div_agg_labelled,
     geojson=geojson,
     locations="ADM2_NAME",
     featureidkey="properties.ADM2_NAME",
-    color="mean_recovery_gap",
+    color="Mean recovery gap",
     color_continuous_scale="RdBu_r",
     color_continuous_midpoint=0,
     hover_name="ADM2_NAME",
     hover_data={
-        "ADM1_NAME": True,
-        "mean_recovery_gap": ":.2f",
-        "mean_heat_anomaly": ":.1f",
-        "mean_ndvi_ratio": ":.2f",
-        "mean_sightings_ratio": ":.2f",
-        "n_events": True,
+        "State": True,
+        "Mean recovery gap": ":.2f",
+        "Mean post-fire heat anomaly (extra hot days/yr)": ":.1f",
+        "Mean NDVI recovery ratio": ":.2f",
+        "Mean sightings recovery ratio": ":.2f",
+        "Number of major fire events": True,
     },
     map_style="carto-positron",
     zoom=3.2,
@@ -225,8 +246,13 @@ fig_map = px.choropleth_map(
     height=650,
 )
 fig_map.update_layout(
-    margin=dict(l=0, r=0, t=10, b=0),
-    coloraxis_colorbar=dict(title="mean recovery<br>gap"),
+    title=dict(
+        text="Figure 2. Mean Post-Fire Recovery Gap by Fire-Prone Division<br>"
+             "<sup>Red = vegetation recovers better than wildlife (widening blind-spot risk); Blue = the two track together</sup>",
+        x=0.02, y=0.98,
+    ),
+    margin=dict(l=0, r=0, t=70, b=0),
+    coloraxis_colorbar=dict(title="Mean recovery gap<br>(+ = vegetation<br>outpaces wildlife)"),
 )
 fig_map
 ```
@@ -254,10 +280,10 @@ ax.scatter(events["heat_anomaly_postfire"], events["log_sight_ratio"], alpha=0.1
 ax.plot(xs, np.polyval(z_ndvi, xs), color="seagreen", lw=3, label="NDVI recovery (vegetation)")
 ax.plot(xs, np.polyval(z_sight, xs), color="darkorange", lw=3, label="Sightings recovery (wildlife)")
 ax.axhline(0, color="grey", lw=0.7, ls="--")
-ax.set_xlabel("post-fire heat anomaly (extra hot days/yr >=35C vs division baseline)")
-ax.set_ylabel("log(recovery ratio)  [0 = back to pre-fire baseline]")
-ax.set_title("Vegetation 'recovers' regardless of heat -- wildlife doesn't")
-ax.legend()
+ax.set_xlabel("Post-fire heat anomaly: extra hot days/yr (>=35C) vs. division's own baseline")
+ax.set_ylabel("Log recovery ratio (0 = fully recovered to pre-fire baseline)")
+ax.set_title("Figure 3. Vegetation Recovers Regardless of Heat -- Wildlife Does Not")
+ax.legend(title="Recovery trend line", loc="upper right")
 plt.tight_layout()
 plt.show()
 ```
@@ -281,8 +307,9 @@ fig, ax = plt.subplots(figsize=(6.5, 5))
 ax.bar(tercile.index, tercile["mean_gap"], yerr=1.96 * tercile["se_gap"], capsize=6,
        color=["#4c72b0", "#dd8452", "#c44e52"])
 ax.axhline(0, color="grey", lw=0.8)
-ax.set_ylabel("mean recovery gap")
-ax.set_title("The gap climbs monotonically with post-fire heat exposure")
+ax.set_xlabel("Post-fire heat exposure group (equal-sized thirds of all events)")
+ax.set_ylabel("Mean recovery gap (log NDVI ratio - log sightings ratio), +/-95% CI")
+ax.set_title("Figure 4. Mean Recovery Gap Rises Monotonically With Post-Fire Heat Exposure")
 plt.tight_layout()
 plt.show()
 tercile
@@ -430,3 +457,23 @@ no -- the landscape's visible resilience is real, but it is no longer a
 trustworthy proxy for the resilience of the animals that depend on it, and
 that gap is on a trajectory to get worse, not better, as the climate
 continues to warm.
+
+## 11. Appendix A: Feature Definitions
+
+| Term | Definition |
+|---|---|
+| **Major fire event** | A division-year with at least one recorded fire >= 1,000 ha -- separates landscape-scale wildfires from routine hazard-reduction burns, which are recorded in almost every year in most fire-prone divisions. |
+| **Pre-fire baseline** | The mean of the two years immediately before the fire year (Y-1, Y-2), computed separately for NDVI and for sightings share. |
+| **Post-fire checkpoint** | A fixed point 3 years after the fire year (Y+3) -- chosen to match how quickly NDVI typically plateaus after a fire in this dataset, and to keep the 2019-20 "Black Summer" fires inside the NDVI data's 2022 cutoff (2019 + 3 = 2022). |
+| **NDVI recovery ratio** | `NDVI(Y+3) / mean(NDVI(Y-1), NDVI(Y-2))`. 1.0 = fully back to pre-fire greenness; below 1 = still suppressed; above 1 = greener than before the fire. |
+| **Sightings share** | A division's koala/glider sightings in a given year, divided by total sightings across all fire-prone divisions that year -- a partial correction for the nationwide growth in citizen-science reporting effort over time. |
+| **Sightings recovery ratio** | `(share(Y+3) + eps) / (mean(share(Y-1), share(Y-2)) + eps)`, with `eps = 1e-6` to avoid division by zero for divisions with no sightings in the baseline window. |
+| **Heat anomaly (post-fire)** | `mean(hot days >=35C, Y to Y+3) - that division's own long-run mean hot-day count`. Measured relative to each division's own baseline (not in absolute terms), so it captures "unusually hot for this place" rather than just "a hot place." |
+| **Recovery gap** | `log(NDVI recovery ratio) - log(sightings recovery ratio)`. Zero = vegetation and wildlife recovered by the same proportional amount; positive = vegetation recovered relatively better than wildlife. |
+| **Fire severity (`log_severity`)** | `log(maximum single fire area in hectares recorded in that division-year)` -- log-transformed because fire size spans several orders of magnitude. Included as a regression control variable. |
+| **Habitat division filter** | Only divisions with >= 200 total koala/glider sightings across the whole record are included in sightings-based tests, to exclude LGAs (mostly inland cropping/rangeland) where these species barely occur and the sightings ratio would just be noise. |
+| **Heat tercile** | Events split into three equal-sized groups (Low / Medium / High) by post-fire heat anomaly, used for the non-parametric comparisons in Sections 6.2 and 7.4. |
+
+## 12. References
+
+*(Sources to be added.)*
