@@ -1,0 +1,416 @@
+---
+title: "Fire Refuges Or Fire Traps?"
+subtitle: "Koala and glider sightings in fire-prone NSW and Queensland regions"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    code-fold: true
+    embed-resources: true
+execute:
+  warning: false
+  message: false
+---
+
+## Research Question
+
+> **Fire refuges or fire traps? Are koala and glider sighting hotspots concentrated in regions with repeated fire history?**
+
+This asks whether regions with many records of iconic arboreal mammals are also regions with high historical fire pressure.
+
+The analysis is deliberately framed as **spatial overlap**, not population decline. The animal file contains presence records, so a high number of sightings can reflect animal presence, observer effort, or both. It should not be interpreted as true abundance.
+
+## Data
+
+This first prototype combines:
+
+- `animal_sightings.csv`: point records for koalas and gliders.
+- `au_admin2_boundaries.geojson`: local government area boundaries for NSW, Queensland and Victoria.
+- `fire_prone_divisions.csv`: existing fire-history summary by local government area for NSW and Queensland.
+
+Because the fire summary covers NSW and Queensland only, the analysis is limited to those two states.
+
+```{r}
+library(tidyverse)
+library(sf)
+library(lubridate)
+library(knitr)
+library(scales)
+library(ggrepel)
+
+theme_set(theme_minimal(base_size = 12))
+
+animal_path <- "animal_sightings.csv"
+admin_path <- "au_admin2_boundaries.geojson"
+fire_path <- "fire_prone_divisions.csv"
+```
+
+## Load And Prepare Geography
+
+```{r}
+admin <- st_read(admin_path, quiet = TRUE) |>
+  st_transform(4326) |>
+  filter(ADM1_NAME %in% c("New South Wales", "Queensland")) |>
+  select(ADM1_NAME, ADM2_NAME, geometry)
+
+admin_area <- admin |>
+  st_transform(3577) |>
+  mutate(lga_area_ha = as.numeric(st_area(geometry)) / 10000) |>
+  st_drop_geometry() |>
+  select(ADM1_NAME, ADM2_NAME, lga_area_ha)
+
+fire_lga <- read_csv(fire_path, show_col_types = FALSE) |>
+  filter(ADM1_NAME %in% c("New South Wales", "Queensland")) |>
+  mutate(
+    earliest_fire = as.Date(earliest_fire),
+    latest_fire = as.Date(latest_fire)
+  )
+
+list(
+  admin_lgas = nrow(admin),
+  fire_summary_lgas = nrow(fire_lga)
+) |>
+  enframe(name = "metric", value = "value") |>
+  kable()
+```
+
+## Load Animal Sightings
+
+```{r}
+animals <- read_csv(animal_path, show_col_types = FALSE) |>
+  filter(
+    occurrenceStatus == "PRESENT",
+    !is.na(decimalLongitude),
+    !is.na(decimalLatitude),
+    between(decimalLongitude, 140, 156),
+    between(decimalLatitude, -40, -9)
+  ) |>
+  mutate(
+    event_date = suppressWarnings(as.Date(eventDate)),
+    year = year(event_date),
+    species_group = case_when(
+      str_detect(scientificName, "^Phascolarctos cinereus") ~ "Koala",
+      str_detect(scientificName, "^Petauroides volans") ~ "Greater glider",
+      str_detect(scientificName, "^Petaurus australis") ~ "Yellow-bellied glider",
+      TRUE ~ "Other"
+    )
+  ) |>
+  filter(species_group != "Other") |>
+  distinct(recordID, .keep_all = TRUE)
+
+animals |>
+  count(species_group, sort = TRUE) |>
+  kable()
+```
+
+```{r}
+animals |>
+  filter(!is.na(year)) |>
+  count(year) |>
+  ggplot(aes(x = year, y = n)) +
+  geom_col(fill = "#4f7f9f") +
+  labs(
+    title = "Animal sighting records by year",
+    subtitle = "Record volume is affected by observer effort and data-source coverage",
+    x = "Year",
+    y = "Sightings"
+  )
+```
+
+## Spatial Join: Sightings To LGAs
+
+```{r}
+animal_points <- st_as_sf(
+  animals,
+  coords = c("decimalLongitude", "decimalLatitude"),
+  crs = 4326,
+  remove = FALSE
+)
+
+animal_lga <- st_join(
+  animal_points,
+  admin |> select(ADM1_NAME, ADM2_NAME),
+  join = st_within,
+  left = FALSE
+)
+
+animal_lga_summary <- animal_lga |>
+  st_drop_geometry() |>
+  group_by(ADM1_NAME, ADM2_NAME) |>
+  summarise(
+    total_sightings = n(),
+    koala_sightings = sum(species_group == "Koala"),
+    greater_glider_sightings = sum(species_group == "Greater glider"),
+    yellow_bellied_glider_sightings = sum(species_group == "Yellow-bellied glider"),
+    target_species_groups = n_distinct(species_group),
+    recent_sightings_2019_onward = sum(year >= 2019, na.rm = TRUE),
+    first_sighting_year = min(year, na.rm = TRUE),
+    latest_sighting_year = max(year, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+animal_lga_summary |>
+  arrange(desc(total_sightings)) |>
+  slice_head(n = 15) |>
+  kable()
+```
+
+## Combine Fire Pressure And Sighting Hotspots
+
+```{r}
+combined_lga <- admin |>
+  st_drop_geometry() |>
+  distinct(ADM1_NAME, ADM2_NAME) |>
+  left_join(admin_area, by = c("ADM1_NAME", "ADM2_NAME")) |>
+  left_join(fire_lga, by = c("ADM1_NAME", "ADM2_NAME")) |>
+  left_join(animal_lga_summary, by = c("ADM1_NAME", "ADM2_NAME")) |>
+  mutate(
+    across(
+      c(
+        fire_count,
+        total_area_ha,
+        avg_area_ha_per_fire,
+        total_sightings,
+        koala_sightings,
+        greater_glider_sightings,
+        yellow_bellied_glider_sightings,
+        target_species_groups,
+        recent_sightings_2019_onward
+      ),
+      ~ replace_na(.x, 0)
+    ),
+    has_fire_history = fire_count > 0,
+    has_target_sighting = total_sightings > 0,
+    fire_count_per_1000_km2 = fire_count / (lga_area_ha / 100000),
+    repeated_burn_area_ratio = total_area_ha / lga_area_ha,
+    sightings_per_1000_km2 = total_sightings / (lga_area_ha / 100000)
+  )
+
+combined_lga |>
+  summarise(
+    lgas = n(),
+    lgas_with_fire_summary = sum(has_fire_history),
+    lgas_with_target_sightings = sum(has_target_sighting),
+    lgas_with_both = sum(has_fire_history & has_target_sighting)
+  ) |>
+  kable()
+```
+
+The `repeated_burn_area_ratio` can exceed 1 because the fire history is cumulative: the same area can burn multiple times across decades.
+
+```{r}
+combined_lga |>
+  filter(has_fire_history, has_target_sighting) |>
+  arrange(desc(total_sightings), desc(fire_count)) |>
+  select(
+    ADM1_NAME,
+    ADM2_NAME,
+    total_sightings,
+    koala_sightings,
+    greater_glider_sightings,
+    yellow_bellied_glider_sightings,
+    fire_count,
+    total_area_ha,
+    latest_fire
+  ) |>
+  slice_head(n = 20) |>
+  kable(digits = 1)
+```
+
+## Classify Regions: Refuge Or Trap?
+
+This classification is exploratory:
+
+- **High biodiversity signal:** top quartile of target animal sightings among LGAs with at least one target sighting.
+- **High fire pressure:** top quartile of fire count among LGAs with fire-history records.
+- **Possible fire trap:** high biodiversity signal and high fire pressure.
+- **Possible refuge:** high biodiversity signal and lower recorded fire pressure.
+
+```{r}
+biodiversity_threshold <- combined_lga |>
+  filter(total_sightings > 0) |>
+  summarise(q75 = quantile(total_sightings, 0.75, na.rm = TRUE)) |>
+  pull(q75)
+
+fire_threshold <- combined_lga |>
+  filter(fire_count > 0) |>
+  summarise(q75 = quantile(fire_count, 0.75, na.rm = TRUE)) |>
+  pull(q75)
+
+classified_lga <- combined_lga |>
+  mutate(
+    high_biodiversity_signal = total_sightings >= biodiversity_threshold,
+    high_fire_pressure = fire_count >= fire_threshold,
+    class = case_when(
+      high_biodiversity_signal & high_fire_pressure ~ "Possible fire trap",
+      high_biodiversity_signal & !high_fire_pressure ~ "Possible refuge",
+      !high_biodiversity_signal & high_fire_pressure ~ "High fire / lower sightings",
+      TRUE ~ "Lower fire / lower sightings"
+    )
+  )
+
+tibble(
+  threshold = c("High biodiversity signal", "High fire pressure"),
+  rule = c(
+    "Top quartile of target animal sightings among LGAs with sightings",
+    "Top quartile of fire count among LGAs with fire records"
+  ),
+  cutoff = c(biodiversity_threshold, fire_threshold)
+) |>
+  kable(digits = 1)
+```
+
+```{r}
+classified_lga |>
+  count(class, sort = TRUE) |>
+  kable()
+```
+
+## Main Visual
+
+```{r}
+plot_data <- classified_lga |>
+  mutate(label = if_else(class == "Possible fire trap", ADM2_NAME, NA_character_))
+
+ggplot(plot_data, aes(x = fire_count, y = total_sightings, color = class)) +
+  geom_point(aes(size = recent_sightings_2019_onward), alpha = 0.75) +
+  geom_vline(xintercept = fire_threshold, linetype = "dashed", color = "#555555") +
+  geom_hline(yintercept = biodiversity_threshold, linetype = "dashed", color = "#555555") +
+  ggrepel::geom_text_repel(aes(label = label), max.overlaps = 20, size = 3, na.rm = TRUE) +
+  scale_x_continuous(trans = "log1p") +
+  scale_y_continuous(trans = "log1p") +
+  scale_color_manual(values = c(
+    "Possible fire trap" = "#d64b3c",
+    "Possible refuge" = "#2f7d66",
+    "High fire / lower sightings" = "#c18b2b",
+    "Lower fire / lower sightings" = "#6f8796"
+  )) +
+  scale_size_continuous(range = c(1.5, 8), guide = "none") +
+  labs(
+    title = "Koala and glider sighting hotspots often overlap with repeated fire history",
+    subtitle = "NSW and Queensland LGAs; axes use log(1+x) scaling",
+    x = "Fire count in LGA",
+    y = "Koala and glider sighting records",
+    color = "Exploratory class"
+  )
+```
+
+## Map Of Exploratory Classes
+
+```{r}
+map_lga <- admin |>
+  left_join(
+    classified_lga |>
+      select(ADM1_NAME, ADM2_NAME, class, total_sightings, fire_count),
+    by = c("ADM1_NAME", "ADM2_NAME")
+  )
+
+ggplot(map_lga) +
+  geom_sf(aes(fill = class), color = "white", linewidth = 0.08) +
+  scale_fill_manual(values = c(
+    "Possible fire trap" = "#d64b3c",
+    "Possible refuge" = "#2f7d66",
+    "High fire / lower sightings" = "#c18b2b",
+    "Lower fire / lower sightings" = "#d9d9d9"
+  ), na.value = "#eeeeee") +
+  facet_wrap(vars(ADM1_NAME)) +
+  labs(
+    title = "Spatial overlap between target mammal sightings and fire history",
+    subtitle = "Exploratory LGA classes for NSW and Queensland",
+    fill = "Class"
+  ) +
+  theme(axis.text = element_blank(), axis.title = element_blank())
+```
+
+## Statistical Checks
+
+### Are Sighting Hotspots More Likely To Be Fire-Prone?
+
+This uses a 2x2 Fisher exact test: high versus lower biodiversity signal crossed with high versus lower fire pressure.
+
+```{r}
+overlap_table <- classified_lga |>
+  count(high_biodiversity_signal, high_fire_pressure) |>
+  pivot_wider(names_from = high_fire_pressure, values_from = n, values_fill = 0) |>
+  column_to_rownames("high_biodiversity_signal") |>
+  as.matrix()
+
+fisher_result <- fisher.test(overlap_table)
+
+overlap_table
+```
+
+```{r}
+tibble(
+  statistic = c("odds_ratio", "p_value"),
+  value = c(unname(fisher_result$estimate), fisher_result$p.value)
+) |>
+  kable(digits = 4)
+```
+
+### Is Fire Count Associated With Sighting Count?
+
+Spearman correlation is used because both variables are skewed and count-like.
+
+```{r}
+cor_data <- classified_lga |>
+  filter(total_sightings > 0 | fire_count > 0)
+
+spearman_test <- cor.test(
+  cor_data$fire_count,
+  cor_data$total_sightings,
+  method = "spearman",
+  exact = FALSE
+)
+
+tibble(
+  statistic = c("spearman_rho", "p_value", "lgas_used"),
+  value = c(unname(spearman_test$estimate), spearman_test$p.value, nrow(cor_data))
+) |>
+  kable(digits = 4)
+```
+
+## Candidate Priority Regions
+
+These LGAs have both high target-mammal sighting counts and high fire counts under the top-quartile rules.
+
+```{r}
+classified_lga |>
+  filter(class == "Possible fire trap") |>
+  arrange(desc(total_sightings), desc(fire_count)) |>
+  select(
+    ADM1_NAME,
+    ADM2_NAME,
+    total_sightings,
+    koala_sightings,
+    greater_glider_sightings,
+    yellow_bellied_glider_sightings,
+    fire_count,
+    total_area_ha,
+    latest_fire,
+    repeated_burn_area_ratio
+  ) |>
+  kable(digits = 2)
+```
+
+## Interpretation
+
+This analysis gives a concrete environmental version of "Is Australia doing well?":
+
+> Australia is not doing equally well everywhere if regions that act as visible koala and glider hotspots are also exposed to repeated fire history.
+
+The useful output is not a claim that fire caused animal decline. The useful output is a **risk-prioritisation map**:
+
+- **Possible fire traps** are places where conservation attention may be urgent because target-mammal records and fire history overlap.
+- **Possible refuges** are places with many target-mammal records and lower recorded fire pressure.
+- The results should be interpreted with observer-effort bias, presence-only records, and incomplete fire coverage in mind.
+
+Best refined research question:
+
+> **Which NSW and Queensland regions are ecological double-risk zones, combining high koala/glider sighting activity with repeated fire history?**
+
+## Reproducibility
+
+```{r}
+sessionInfo()
+```
