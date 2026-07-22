@@ -7,6 +7,7 @@ statsmodels
 # NetCDF processing
 xarray
 netCDF4
+regionmask
 
 # Visualisation
 matplotlib
