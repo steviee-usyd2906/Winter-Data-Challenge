@@ -1,0 +1,1795 @@
+% Options for packages loaded elsewhere
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+%
+\documentclass[
+  letterpaper,
+  DIV=11,
+  numbers=noendperiod]{scrartcl}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{5}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+% Make \paragraph and \subparagraph free-standing
+\makeatletter
+\ifx\paragraph\undefined\else
+  \let\oldparagraph\paragraph
+  \renewcommand{\paragraph}{
+    \@ifstar
+      \xxxParagraphStar
+      \xxxParagraphNoStar
+  }
+  \newcommand{\xxxParagraphStar}[1]{\oldparagraph*{#1}\mbox{}}
+  \newcommand{\xxxParagraphNoStar}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+  \let\oldsubparagraph\subparagraph
+  \renewcommand{\subparagraph}{
+    \@ifstar
+      \xxxSubParagraphStar
+      \xxxSubParagraphNoStar
+  }
+  \newcommand{\xxxSubParagraphStar}[1]{\oldsubparagraph*{#1}\mbox{}}
+  \newcommand{\xxxSubParagraphNoStar}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+\makeatother
+
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{241,243,245}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.40,0.45,0.13}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\BuiltInTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\ExtensionTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.28,0.35,0.67}{#1}}
+\newcommand{\ImportTok}[1]{\textcolor[rgb]{0.00,0.46,0.62}{#1}}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.07,0.07,0.07}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
+
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+
+
+
+
+
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+
+
+ 
+
+
+\KOMAoption{captions}{tableheading}
+\makeatletter
+\@ifpackageloaded{tcolorbox}{}{\usepackage[skins,breakable]{tcolorbox}}
+\@ifpackageloaded{fontawesome5}{}{\usepackage{fontawesome5}}
+\definecolor{quarto-callout-color}{HTML}{909090}
+\definecolor{quarto-callout-note-color}{HTML}{0758E5}
+\definecolor{quarto-callout-important-color}{HTML}{CC1914}
+\definecolor{quarto-callout-warning-color}{HTML}{EB9113}
+\definecolor{quarto-callout-tip-color}{HTML}{00A047}
+\definecolor{quarto-callout-caution-color}{HTML}{FC5300}
+\definecolor{quarto-callout-color-frame}{HTML}{acacac}
+\definecolor{quarto-callout-note-color-frame}{HTML}{4582ec}
+\definecolor{quarto-callout-important-color-frame}{HTML}{d9534f}
+\definecolor{quarto-callout-warning-color-frame}{HTML}{f0ad4e}
+\definecolor{quarto-callout-tip-color-frame}{HTML}{02b875}
+\definecolor{quarto-callout-caution-color-frame}{HTML}{fd7e14}
+\makeatother
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\AtBeginDocument{%
+\ifdefined\contentsname
+  \renewcommand*\contentsname{Table of contents}
+\else
+  \newcommand\contentsname{Table of contents}
+\fi
+\ifdefined\listfigurename
+  \renewcommand*\listfigurename{List of Figures}
+\else
+  \newcommand\listfigurename{List of Figures}
+\fi
+\ifdefined\listtablename
+  \renewcommand*\listtablename{List of Tables}
+\else
+  \newcommand\listtablename{List of Tables}
+\fi
+\ifdefined\figurename
+  \renewcommand*\figurename{Figure}
+\else
+  \newcommand\figurename{Figure}
+\fi
+\ifdefined\tablename
+  \renewcommand*\tablename{Table}
+\else
+  \newcommand\tablename{Table}
+\fi
+}
+\@ifpackageloaded{float}{}{\usepackage{float}}
+\floatstyle{ruled}
+\@ifundefined{c@chapter}{\newfloat{codelisting}{h}{lop}}{\newfloat{codelisting}{h}{lop}[chapter]}
+\floatname{codelisting}{Listing}
+\newcommand*\listoflistings{\listof{codelisting}{List of Listings}}
+\makeatother
+\makeatletter
+\makeatother
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\@ifpackageloaded{subcaption}{}{\usepackage{subcaption}}
+\makeatother
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Fire, Heat, and the Wildlife Recovery Gap in Australia},
+  pdfauthor={Hieu Do (SID:540914928); Van Duong (SID:530745613); Cong Thanh Vu (SID:530784058)},
+  colorlinks=true,
+  linkcolor={blue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={Blue},
+  pdfcreator={LaTeX via pandoc}}
+
+
+\title{Fire, Heat, and the Wildlife Recovery Gap in Australia}
+\usepackage{etoolbox}
+\makeatletter
+\providecommand{\subtitle}[1]{% add subtitle to \maketitle
+  \apptocmd{\@title}{\par {\large #1 \par}}{}{}
+}
+\makeatother
+\subtitle{Does post-fire heat exposure widen the gap between vegetation
+greening and wildlife recovery?}
+\author{Hieu Do (SID:540914928) \and Van Duong (SID:530745613) \and Cong
+Thanh Vu (SID:530784058)}
+\date{2026-07-22}
+\begin{document}
+\maketitle
+
+
+\section{Introduction \& research
+question}\label{introduction-research-question}
+
+\begin{tcolorbox}[enhanced jigsaw, left=2mm, opacityback=0, colback=white, breakable, arc=.35mm, bottomrule=.15mm, rightrule=.15mm, toprule=.15mm, colframe=quarto-callout-note-color-frame, leftrule=.75mm]
+\begin{minipage}[t]{5.5mm}
+\textcolor{quarto-callout-note-color}{\faInfo}
+\end{minipage}%
+\begin{minipage}[t]{\textwidth - 5.5mm}
+
+\vspace{-3mm}\textbf{Research question}\vspace{3mm}
+
+\textbf{Does post-fire heat exposure widen the gap between vegetation
+recovery and wildlife recovery?}
+
+Put simply: does the reassuring ``it's green again'' signal from
+satellite NDVI become a weaker proxy for habitat recovery when the years
+after a fire are unusually hot?
+
+\end{minipage}%
+\end{tcolorbox}
+
+This report tests a practical monitoring problem. After a large fire,
+satellite greenness can return quickly, but that does not necessarily
+mean habitat function or animal presence has recovered. The analysis
+therefore compares three signals for the same places and fire years:
+fire disturbance, vegetation recovery, and wildlife sightings, then asks
+whether unusually hot post-fire conditions make those signals diverge.
+
+The analysis unit is the \textbf{individual major fire event}: one
+administrative division in one fire year with at least one recorded fire
+\texttt{\textgreater{}=\ 10,000\ ha}. This event-level design is the
+report's main analytical innovation. It avoids treating a whole LGA as
+simply ``burnt'' or ``not burnt'' forever, and instead attaches each
+fire event to its own post-fire heat exposure, vegetation response, and
+sightings response. Every cached dataset below is built \textbf{once};
+every later section reuses that same event table so the workflow is
+reproducible and internally consistent.
+
+In wider context, this is a stress test of the common ``Australia is
+doing well if the landscape looks green again'' narrative. A positive
+result would suggest that satellite recovery alone can give false
+reassurance under hotter post-fire conditions. A weak or mixed result
+would still be useful, because it identifies where the current wildlife
+data are not strong enough to support national claims.
+
+\begin{tcolorbox}[enhanced jigsaw, left=2mm, opacityback=0, colback=white, breakable, arc=.35mm, bottomrule=.15mm, rightrule=.15mm, toprule=.15mm, colframe=quarto-callout-tip-color-frame, leftrule=.75mm]
+\begin{minipage}[t]{5.5mm}
+\textcolor{quarto-callout-tip-color}{\faLightbulb}
+\end{minipage}%
+\begin{minipage}[t]{\textwidth - 5.5mm}
+
+\vspace{-3mm}\textbf{Executive summary}\vspace{3mm}
+
+\begin{itemize}
+\tightlist
+\item
+  The report builds one event-level dataset linking major fires, heat
+  exposure, NDVI recovery, and wildlife sightings.
+\item
+  The clearest result is that hotter-than-normal early post-fire periods
+  are associated with weaker vegetation recovery.
+\item
+  The wildlife and recovery-gap results point toward a possible
+  monitoring blind spot, but they remain less certain because sightings
+  data are presence-only, unevenly recorded, and geographically narrow.
+\item
+  The final claim is cautious: Australia should not be judged as ``doing
+  well'' from satellite greenness alone.
+\end{itemize}
+
+\end{minipage}%
+\end{tcolorbox}
+
+The report is organised around four questions:
+
+\begin{longtable}[]{@{}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedleft
+Step
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Reader question
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Evidence used
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 & Where and when did major fires occur? & Fire-history polygons
+aggregated to division-year events \\
+2 & Did vegetation greenness recover after those fires? & NDVI recovery
+ratio \\
+3 & Did wildlife sightings recover in the same places and years? &
+Sightings-share recovery ratio \\
+4 & Does post-fire heat explain a mismatch? & Heat anomaly, recovery
+gap, statistical tests \\
+\end{longtable}
+
+The key contribution is not a single map or chart. It is the integration
+of fire history, gridded climate exposure, satellite vegetation
+recovery, and species occurrence records into one event-level recovery
+dataset.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Dataset
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Role
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Source
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Fire history shapefiles, 7 states/territories & disturbance events:
+location, date, area & NSW (NPWS), QLD (QPWS), VIC (DEECA), SA, TAS, WA
+(DBCA), NT \\
+\texttt{FAO/GAUL/2015/level2} admin-2 boundaries & LGA-level division
+geometries & Google Earth Engine \\
+\texttt{AusENDVI-clim\_MCD43A4...nc} & vegetation recovery signal
+(NDVI), 1982-2022 & Gap-filled MODIS NDVI climatology \\
+ERA5-Land daily max temperature & post-fire heat exposure, relative to
+each division's own baseline & Google Earth Engine
+(\texttt{ECMWF/ERA5\_LAND/DAILY\_AGGR}), 1982-2022 \\
+Koala / greater glider / yellow-bellied glider / yellow-tailed
+black-cockatoo / powerful owl / little lorikeet occurrences & wildlife
+presence (6 canopy/hollow-dependent indicator species) & Atlas of Living
+Australia (\texttt{galah}), 1990-2026, all 7 states/territories \\
+\end{longtable}
+
+\section{Setup}\label{setup}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ImportTok{import}\NormalTok{ os}
+\ImportTok{import}\NormalTok{ json}
+\ImportTok{import}\NormalTok{ numpy }\ImportTok{as}\NormalTok{ np}
+\ImportTok{import}\NormalTok{ pandas }\ImportTok{as}\NormalTok{ pd}
+\ImportTok{from}\NormalTok{ scipy }\ImportTok{import}\NormalTok{ stats}
+\ImportTok{import}\NormalTok{ matplotlib.pyplot }\ImportTok{as}\NormalTok{ plt}
+\ImportTok{import}\NormalTok{ plotly.express }\ImportTok{as}\NormalTok{ px}
+
+\NormalTok{DATA\_DIR }\OperatorTok{=}\NormalTok{ os.path.join(os.getcwd(), }\StringTok{".."}\NormalTok{, }\StringTok{"data"}\NormalTok{)  }\CommentTok{\# report lives in reports/, data lives in ../data}
+\NormalTok{pd.set\_option(}\StringTok{"display.width"}\NormalTok{, }\DecValTok{140}\NormalTok{)}
+
+\KeywordTok{def}\NormalTok{ sig(p, thresh}\OperatorTok{=}\FloatTok{0.05}\NormalTok{):}
+    \CommentTok{"""So every significance claim below is read live off the current}
+\CommentTok{    p{-}value rather than typed as a fixed claim in prose."""}
+    \ControlFlowTok{return} \SpecialStringTok{f"significant (p = }\SpecialCharTok{\{}\NormalTok{p}\SpecialCharTok{:.3g\}}\SpecialStringTok{ \textless{} }\SpecialCharTok{\{}\NormalTok{thresh}\SpecialCharTok{\}}\SpecialStringTok{)"} \ControlFlowTok{if}\NormalTok{ p }\OperatorTok{\textless{}}\NormalTok{ thresh }\ControlFlowTok{else} \SpecialStringTok{f"not significant (p = }\SpecialCharTok{\{}\NormalTok{p}\SpecialCharTok{:.3g\}}\SpecialStringTok{ \textgreater{}= }\SpecialCharTok{\{}\NormalTok{thresh}\SpecialCharTok{\}}\SpecialStringTok{)"}
+
+\KeywordTok{def}\NormalTok{ load\_admin2\_properties(path):}
+    \ControlFlowTok{with} \BuiltInTok{open}\NormalTok{(path, }\StringTok{"r"}\NormalTok{) }\ImportTok{as}\NormalTok{ f:}
+\NormalTok{        gj }\OperatorTok{=}\NormalTok{ json.load(f)}
+\NormalTok{    rows }\OperatorTok{=}\NormalTok{ []}
+    \ControlFlowTok{for}\NormalTok{ i, feature }\KeywordTok{in} \BuiltInTok{enumerate}\NormalTok{(gj[}\StringTok{"features"}\NormalTok{]):}
+\NormalTok{        props }\OperatorTok{=}\NormalTok{ feature[}\StringTok{"properties"}\NormalTok{]}
+\NormalTok{        rows.append(\{}
+            \StringTok{"feature\_index"}\NormalTok{: i,}
+            \StringTok{"ADM1\_NAME"}\NormalTok{: props[}\StringTok{"ADM1\_NAME"}\NormalTok{],}
+            \StringTok{"ADM2\_NAME"}\NormalTok{: props[}\StringTok{"ADM2\_NAME"}\NormalTok{],}
+            \StringTok{"division\_id"}\NormalTok{: }\SpecialStringTok{f"}\SpecialCharTok{\{}\NormalTok{props[}\StringTok{\textquotesingle{}ADM1\_NAME\textquotesingle{}}\NormalTok{]}\SpecialCharTok{\}}\SpecialStringTok{||}\SpecialCharTok{\{}\NormalTok{props[}\StringTok{\textquotesingle{}ADM2\_NAME\textquotesingle{}}\NormalTok{]}\SpecialCharTok{\}}\SpecialStringTok{"}\NormalTok{,}
+\NormalTok{        \})}
+    \ControlFlowTok{return}\NormalTok{ pd.DataFrame(rows), gj}
+
+\KeywordTok{def}\NormalTok{ filter\_geojson(base\_geojson, division\_ids):}
+\NormalTok{    division\_ids }\OperatorTok{=} \BuiltInTok{set}\NormalTok{(division\_ids)}
+\NormalTok{    features }\OperatorTok{=}\NormalTok{ []}
+    \ControlFlowTok{for}\NormalTok{ feature }\KeywordTok{in}\NormalTok{ base\_geojson[}\StringTok{"features"}\NormalTok{]:}
+\NormalTok{        props }\OperatorTok{=}\NormalTok{ feature[}\StringTok{"properties"}\NormalTok{]}
+\NormalTok{        division\_id }\OperatorTok{=} \SpecialStringTok{f"}\SpecialCharTok{\{}\NormalTok{props[}\StringTok{\textquotesingle{}ADM1\_NAME\textquotesingle{}}\NormalTok{]}\SpecialCharTok{\}}\SpecialStringTok{||}\SpecialCharTok{\{}\NormalTok{props[}\StringTok{\textquotesingle{}ADM2\_NAME\textquotesingle{}}\NormalTok{]}\SpecialCharTok{\}}\SpecialStringTok{"}
+        \ControlFlowTok{if}\NormalTok{ division\_id }\KeywordTok{in}\NormalTok{ division\_ids:}
+\NormalTok{            feature }\OperatorTok{=} \BuiltInTok{dict}\NormalTok{(feature)}
+\NormalTok{            feature[}\StringTok{"properties"}\NormalTok{] }\OperatorTok{=} \BuiltInTok{dict}\NormalTok{(props)}
+\NormalTok{            feature[}\StringTok{"properties"}\NormalTok{][}\StringTok{"division\_id"}\NormalTok{] }\OperatorTok{=}\NormalTok{ division\_id}
+\NormalTok{            features.append(feature)}
+    \ControlFlowTok{return}\NormalTok{ \{}\StringTok{"type"}\NormalTok{: }\StringTok{"FeatureCollection"}\NormalTok{, }\StringTok{"features"}\NormalTok{: features\}}
+
+\KeywordTok{def}\NormalTok{ vif\_table(df, predictors):}
+\NormalTok{    vals }\OperatorTok{=}\NormalTok{ \{\}}
+    \ControlFlowTok{for}\NormalTok{ target }\KeywordTok{in}\NormalTok{ predictors:}
+\NormalTok{        others }\OperatorTok{=}\NormalTok{ [p }\ControlFlowTok{for}\NormalTok{ p }\KeywordTok{in}\NormalTok{ predictors }\ControlFlowTok{if}\NormalTok{ p }\OperatorTok{!=}\NormalTok{ target]}
+        \ControlFlowTok{if} \KeywordTok{not}\NormalTok{ others:}
+\NormalTok{            vals[target] }\OperatorTok{=} \FloatTok{1.0}
+            \ControlFlowTok{continue}
+\NormalTok{        y }\OperatorTok{=}\NormalTok{ df[target].to\_numpy(}\BuiltInTok{float}\NormalTok{)}
+\NormalTok{        X }\OperatorTok{=}\NormalTok{ np.column\_stack([np.ones(}\BuiltInTok{len}\NormalTok{(df))] }\OperatorTok{+}\NormalTok{ [df[o].to\_numpy(}\BuiltInTok{float}\NormalTok{) }\ControlFlowTok{for}\NormalTok{ o }\KeywordTok{in}\NormalTok{ others])}
+\NormalTok{        beta }\OperatorTok{=}\NormalTok{ np.linalg.pinv(X.T }\OperatorTok{@}\NormalTok{ X) }\OperatorTok{@}\NormalTok{ X.T }\OperatorTok{@}\NormalTok{ y}
+\NormalTok{        resid }\OperatorTok{=}\NormalTok{ y }\OperatorTok{{-}}\NormalTok{ X }\OperatorTok{@}\NormalTok{ beta}
+\NormalTok{        sst }\OperatorTok{=}\NormalTok{ np.}\BuiltInTok{sum}\NormalTok{((y }\OperatorTok{{-}}\NormalTok{ y.mean()) }\OperatorTok{**} \DecValTok{2}\NormalTok{)}
+\NormalTok{        r2 }\OperatorTok{=} \DecValTok{1} \OperatorTok{{-}}\NormalTok{ np.}\BuiltInTok{sum}\NormalTok{(resid }\OperatorTok{**} \DecValTok{2}\NormalTok{) }\OperatorTok{/}\NormalTok{ sst }\ControlFlowTok{if}\NormalTok{ sst }\OperatorTok{\textgreater{}} \DecValTok{0} \ControlFlowTok{else} \DecValTok{0}
+\NormalTok{        vals[target] }\OperatorTok{=}\NormalTok{ np.inf }\ControlFlowTok{if}\NormalTok{ r2 }\OperatorTok{\textgreater{}=} \DecValTok{1} \ControlFlowTok{else} \DecValTok{1} \OperatorTok{/}\NormalTok{ (}\DecValTok{1} \OperatorTok{{-}}\NormalTok{ r2)}
+    \ControlFlowTok{return}\NormalTok{ vals}
+
+\KeywordTok{class}\NormalTok{ OLSResult:}
+    \KeywordTok{def} \FunctionTok{\_\_init\_\_}\NormalTok{(}\VariableTok{self}\NormalTok{, y\_name, x\_names, n, clusters, params, se, tvals, pvalues, r2, fitted, resid):}
+        \VariableTok{self}\NormalTok{.y\_name }\OperatorTok{=}\NormalTok{ y\_name}
+        \VariableTok{self}\NormalTok{.x\_names }\OperatorTok{=}\NormalTok{ x\_names}
+        \VariableTok{self}\NormalTok{.n }\OperatorTok{=}\NormalTok{ n}
+        \VariableTok{self}\NormalTok{.clusters }\OperatorTok{=}\NormalTok{ clusters}
+        \VariableTok{self}\NormalTok{.params }\OperatorTok{=}\NormalTok{ params}
+        \VariableTok{self}\NormalTok{.bse }\OperatorTok{=}\NormalTok{ se}
+        \VariableTok{self}\NormalTok{.tvalues }\OperatorTok{=}\NormalTok{ tvals}
+        \VariableTok{self}\NormalTok{.pvalues }\OperatorTok{=}\NormalTok{ pvalues}
+        \VariableTok{self}\NormalTok{.rsquared }\OperatorTok{=}\NormalTok{ r2}
+        \VariableTok{self}\NormalTok{.fitted }\OperatorTok{=}\NormalTok{ fitted}
+        \VariableTok{self}\NormalTok{.resid }\OperatorTok{=}\NormalTok{ resid}
+
+    \KeywordTok{def}\NormalTok{ summary(}\VariableTok{self}\NormalTok{):}
+\NormalTok{        rows }\OperatorTok{=}\NormalTok{ []}
+        \ControlFlowTok{for}\NormalTok{ name }\KeywordTok{in}\NormalTok{ [}\StringTok{"const"}\NormalTok{] }\OperatorTok{+} \VariableTok{self}\NormalTok{.x\_names:}
+\NormalTok{            rows.append(}
+                \SpecialStringTok{f"}\SpecialCharTok{\{}\NormalTok{name}\SpecialCharTok{:24s\}}\SpecialStringTok{ coef=}\SpecialCharTok{\{}\VariableTok{self}\SpecialCharTok{.}\NormalTok{params[name]}\SpecialCharTok{: .5f\}}\SpecialStringTok{  "}
+                \SpecialStringTok{f"cluster\_se=}\SpecialCharTok{\{}\VariableTok{self}\SpecialCharTok{.}\NormalTok{bse[name]}\SpecialCharTok{: .5f\}}\SpecialStringTok{  t=}\SpecialCharTok{\{}\VariableTok{self}\SpecialCharTok{.}\NormalTok{tvalues[name]}\SpecialCharTok{: .2f\}}\SpecialStringTok{  "}
+                \SpecialStringTok{f"p=}\SpecialCharTok{\{}\VariableTok{self}\SpecialCharTok{.}\NormalTok{pvalues[name]}\SpecialCharTok{:.4g\}}\SpecialStringTok{"}
+\NormalTok{            )}
+        \ControlFlowTok{return} \StringTok{"}\CharTok{\textbackslash{}n}\StringTok{"}\NormalTok{.join([}
+            \SpecialStringTok{f"OLS with cluster{-}robust standard errors by division"}\NormalTok{,}
+            \SpecialStringTok{f"Outcome: }\SpecialCharTok{\{}\VariableTok{self}\SpecialCharTok{.}\NormalTok{y\_name}\SpecialCharTok{\}}\SpecialStringTok{; n=}\SpecialCharTok{\{}\VariableTok{self}\SpecialCharTok{.}\NormalTok{n}\SpecialCharTok{\}}\SpecialStringTok{; clusters=}\SpecialCharTok{\{}\VariableTok{self}\SpecialCharTok{.}\NormalTok{clusters}\SpecialCharTok{\}}\SpecialStringTok{; R\^{}2=}\SpecialCharTok{\{}\VariableTok{self}\SpecialCharTok{.}\NormalTok{rsquared}\SpecialCharTok{:.3f\}}\SpecialStringTok{"}\NormalTok{,}
+            \OperatorTok{*}\NormalTok{rows,}
+\NormalTok{        ])}
+
+\KeywordTok{def}\NormalTok{ cluster\_robust\_ols(df, y\_col, x\_cols, cluster\_col):}
+\NormalTok{    model\_df }\OperatorTok{=}\NormalTok{ df[[y\_col, cluster\_col] }\OperatorTok{+}\NormalTok{ x\_cols].dropna().reset\_index(drop}\OperatorTok{=}\VariableTok{True}\NormalTok{)}
+\NormalTok{    y }\OperatorTok{=}\NormalTok{ model\_df[y\_col].to\_numpy(}\BuiltInTok{float}\NormalTok{)}
+\NormalTok{    X }\OperatorTok{=}\NormalTok{ np.column\_stack([np.ones(}\BuiltInTok{len}\NormalTok{(model\_df))] }\OperatorTok{+}\NormalTok{ [model\_df[c].to\_numpy(}\BuiltInTok{float}\NormalTok{) }\ControlFlowTok{for}\NormalTok{ c }\KeywordTok{in}\NormalTok{ x\_cols])}
+\NormalTok{    names }\OperatorTok{=}\NormalTok{ [}\StringTok{"const"}\NormalTok{] }\OperatorTok{+}\NormalTok{ x\_cols}
+\NormalTok{    n, k }\OperatorTok{=}\NormalTok{ X.shape}
+\NormalTok{    xtx\_inv }\OperatorTok{=}\NormalTok{ np.linalg.pinv(X.T }\OperatorTok{@}\NormalTok{ X)}
+\NormalTok{    beta }\OperatorTok{=}\NormalTok{ xtx\_inv }\OperatorTok{@}\NormalTok{ X.T }\OperatorTok{@}\NormalTok{ y}
+\NormalTok{    resid }\OperatorTok{=}\NormalTok{ y }\OperatorTok{{-}}\NormalTok{ X }\OperatorTok{@}\NormalTok{ beta}
+
+\NormalTok{    meat }\OperatorTok{=}\NormalTok{ np.zeros((k, k))}
+    \ControlFlowTok{for}\NormalTok{ \_, idx }\KeywordTok{in}\NormalTok{ model\_df.groupby(cluster\_col).groups.items():}
+\NormalTok{        Xg }\OperatorTok{=}\NormalTok{ X[}\BuiltInTok{list}\NormalTok{(idx), :]}
+\NormalTok{        ug }\OperatorTok{=}\NormalTok{ resid[}\BuiltInTok{list}\NormalTok{(idx)][:, }\VariableTok{None}\NormalTok{]}
+\NormalTok{        meat }\OperatorTok{+=}\NormalTok{ Xg.T }\OperatorTok{@}\NormalTok{ ug }\OperatorTok{@}\NormalTok{ ug.T }\OperatorTok{@}\NormalTok{ Xg}
+\NormalTok{    g }\OperatorTok{=}\NormalTok{ model\_df[cluster\_col].nunique()}
+\NormalTok{    correction }\OperatorTok{=}\NormalTok{ (g }\OperatorTok{/}\NormalTok{ (g }\OperatorTok{{-}} \DecValTok{1}\NormalTok{)) }\OperatorTok{*}\NormalTok{ ((n }\OperatorTok{{-}} \DecValTok{1}\NormalTok{) }\OperatorTok{/}\NormalTok{ (n }\OperatorTok{{-}}\NormalTok{ k)) }\ControlFlowTok{if}\NormalTok{ g }\OperatorTok{\textgreater{}} \DecValTok{1} \KeywordTok{and}\NormalTok{ n }\OperatorTok{\textgreater{}}\NormalTok{ k }\ControlFlowTok{else} \DecValTok{1}
+\NormalTok{    cov }\OperatorTok{=}\NormalTok{ correction }\OperatorTok{*}\NormalTok{ xtx\_inv }\OperatorTok{@}\NormalTok{ meat }\OperatorTok{@}\NormalTok{ xtx\_inv}
+\NormalTok{    se }\OperatorTok{=}\NormalTok{ np.sqrt(np.clip(np.diag(cov), }\DecValTok{0}\NormalTok{, np.inf))}
+\NormalTok{    tvals }\OperatorTok{=}\NormalTok{ np.divide(beta, se, out}\OperatorTok{=}\NormalTok{np.full\_like(beta, np.nan), where}\OperatorTok{=}\NormalTok{se }\OperatorTok{\textgreater{}} \DecValTok{0}\NormalTok{)}
+\NormalTok{    dfree }\OperatorTok{=} \BuiltInTok{max}\NormalTok{(g }\OperatorTok{{-}} \DecValTok{1}\NormalTok{, }\DecValTok{1}\NormalTok{)}
+\NormalTok{    pvalues }\OperatorTok{=} \DecValTok{2} \OperatorTok{*}\NormalTok{ stats.t.sf(np.}\BuiltInTok{abs}\NormalTok{(tvals), df}\OperatorTok{=}\NormalTok{dfree)}
+\NormalTok{    sst }\OperatorTok{=}\NormalTok{ np.}\BuiltInTok{sum}\NormalTok{((y }\OperatorTok{{-}}\NormalTok{ y.mean()) }\OperatorTok{**} \DecValTok{2}\NormalTok{)}
+\NormalTok{    r2 }\OperatorTok{=} \DecValTok{1} \OperatorTok{{-}}\NormalTok{ np.}\BuiltInTok{sum}\NormalTok{(resid }\OperatorTok{**} \DecValTok{2}\NormalTok{) }\OperatorTok{/}\NormalTok{ sst }\ControlFlowTok{if}\NormalTok{ sst }\OperatorTok{\textgreater{}} \DecValTok{0} \ControlFlowTok{else}\NormalTok{ np.nan}
+    \ControlFlowTok{return}\NormalTok{ OLSResult(}
+\NormalTok{        y\_col, x\_cols, n, g,}
+        \BuiltInTok{dict}\NormalTok{(}\BuiltInTok{zip}\NormalTok{(names, beta)), }\BuiltInTok{dict}\NormalTok{(}\BuiltInTok{zip}\NormalTok{(names, se)),}
+        \BuiltInTok{dict}\NormalTok{(}\BuiltInTok{zip}\NormalTok{(names, tvals)), }\BuiltInTok{dict}\NormalTok{(}\BuiltInTok{zip}\NormalTok{(names, pvalues)), r2, X }\OperatorTok{@}\NormalTok{ beta, resid,}
+\NormalTok{    )}
+
+\KeywordTok{def}\NormalTok{ effect\_line(label, effect):}
+\NormalTok{    pct }\OperatorTok{=}\NormalTok{ (effect }\OperatorTok{{-}} \DecValTok{1}\NormalTok{) }\OperatorTok{*} \DecValTok{100}
+\NormalTok{    direction }\OperatorTok{=} \StringTok{"higher"} \ControlFlowTok{if}\NormalTok{ pct }\OperatorTok{\textgreater{}=} \DecValTok{0} \ControlFlowTok{else} \StringTok{"lower"}
+    \ControlFlowTok{return} \SpecialStringTok{f"}\SpecialCharTok{\{}\NormalTok{label}\SpecialCharTok{:\textless{}26s\}}\SpecialStringTok{ x }\SpecialCharTok{\{}\NormalTok{effect}\SpecialCharTok{:.3f\}}\SpecialStringTok{   (}\SpecialCharTok{\{}\BuiltInTok{abs}\NormalTok{(pct)}\SpecialCharTok{:.1f\}}\SpecialStringTok{\% }\SpecialCharTok{\{}\NormalTok{direction}\SpecialCharTok{\}}\SpecialStringTok{ relative recovery)"}
+
+\KeywordTok{def}\NormalTok{ residual\_diagnostic\_plot(models, labels):}
+\NormalTok{    fig, axes }\OperatorTok{=}\NormalTok{ plt.subplots(}\BuiltInTok{len}\NormalTok{(models), }\DecValTok{2}\NormalTok{, figsize}\OperatorTok{=}\NormalTok{(}\DecValTok{10}\NormalTok{, }\FloatTok{3.2} \OperatorTok{*} \BuiltInTok{len}\NormalTok{(models)))}
+\NormalTok{    axes }\OperatorTok{=}\NormalTok{ np.atleast\_2d(axes)}
+    \ControlFlowTok{for}\NormalTok{ row, (model, label) }\KeywordTok{in} \BuiltInTok{enumerate}\NormalTok{(}\BuiltInTok{zip}\NormalTok{(models, labels)):}
+\NormalTok{        axes[row, }\DecValTok{0}\NormalTok{].scatter(model.fitted, model.resid, alpha}\OperatorTok{=}\FloatTok{0.45}\NormalTok{, s}\OperatorTok{=}\DecValTok{18}\NormalTok{)}
+\NormalTok{        axes[row, }\DecValTok{0}\NormalTok{].axhline(}\DecValTok{0}\NormalTok{, color}\OperatorTok{=}\StringTok{"grey"}\NormalTok{, lw}\OperatorTok{=}\FloatTok{0.8}\NormalTok{, ls}\OperatorTok{=}\StringTok{"{-}{-}"}\NormalTok{)}
+\NormalTok{        axes[row, }\DecValTok{0}\NormalTok{].set\_title(}\SpecialStringTok{f"}\SpecialCharTok{\{}\NormalTok{label}\SpecialCharTok{\}}\SpecialStringTok{: residuals vs fitted"}\NormalTok{)}
+\NormalTok{        axes[row, }\DecValTok{0}\NormalTok{].set\_xlabel(}\StringTok{"Fitted value"}\NormalTok{)}
+\NormalTok{        axes[row, }\DecValTok{0}\NormalTok{].set\_ylabel(}\StringTok{"Residual"}\NormalTok{)}
+
+\NormalTok{        stats.probplot(model.resid, dist}\OperatorTok{=}\StringTok{"norm"}\NormalTok{, plot}\OperatorTok{=}\NormalTok{axes[row, }\DecValTok{1}\NormalTok{])}
+\NormalTok{        axes[row, }\DecValTok{1}\NormalTok{].set\_title(}\SpecialStringTok{f"}\SpecialCharTok{\{}\NormalTok{label}\SpecialCharTok{\}}\SpecialStringTok{: normal Q{-}Q"}\NormalTok{)}
+\NormalTok{    plt.tight\_layout()}
+\NormalTok{    plt.show()}
+\end{Highlighting}
+\end{Shaded}
+
+\section{Data sources \& processing
+pipeline}\label{data-sources-processing-pipeline}
+
+Each subsection documents how one cached file in \texttt{data/} was
+built. The raw-data steps (reading multi-gigabyte shapefiles/netCDF,
+calling Earth Engine, calling the ALA API) are shown as code but marked
+\texttt{eval:\ false} -- they need local raw data and/or authenticated
+cloud access that this report doesn't assume is present at render time
+-- immediately followed by a \textbf{live} cell that loads the resulting
+cached CSV and reports the real, current numbers.
+
+\subsection{Fire history: loading and standardising 7
+jurisdictions}\label{fire-history-loading-and-standardising-7-jurisdictions}
+
+Each state/territory publishes its fire-history layer with different
+column names and CRSes (NSW/QLD: GDA94 lat/lon, VIC: VicGrid94 projected
+metres, etc.) -- reproject everything to EPSG:4326 and pull out a common
+\texttt{(state,\ start\_date,\ area\_ha,\ geometry)} schema so they can
+be combined. The Northern Territory layer carries its own per-record
+\texttt{state} attribute (border-adjacent fires are sometimes attributed
+to neighbouring QLD/WA/SA), so that attribute is used directly rather
+than hardcoding ``Northern Territory'' for every row.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{FIRE\_SHAPEFILES }\OperatorTok{=}\NormalTok{ \{}
+    \StringTok{"New South Wales"}\NormalTok{: os.path.join(DATA\_DIR, }\StringTok{"NSW\_fire\_history"}\NormalTok{, }\StringTok{"NPWSFireHistory.shp"}\NormalTok{),}
+    \StringTok{"Queensland"}\NormalTok{: os.path.join(DATA\_DIR, }\StringTok{"QLD\_fire\_history"}\NormalTok{, }\StringTok{"Fire\_history\_\_\_QPWS.shp"}\NormalTok{),}
+    \StringTok{"Victoria"}\NormalTok{: os.path.join(DATA\_DIR, }\StringTok{"VIC\_fire\_history"}\NormalTok{, }\StringTok{"gda94\_victoriagrid"}\NormalTok{, }\StringTok{"esrishape"}\NormalTok{,}
+                              \StringTok{"whole\_of\_dataset"}\NormalTok{, }\StringTok{"victoria"}\NormalTok{, }\StringTok{"FIRE"}\NormalTok{, }\StringTok{"FIRE\_HISTORY\_LASTBURNT.shp"}\NormalTok{),}
+    \StringTok{"South Australia"}\NormalTok{: os.path.join(DATA\_DIR, }\StringTok{"SA\_fire\_history"}\NormalTok{, }\StringTok{"FIREMGT\_FireHistory\_GDA2020.shp"}\NormalTok{),}
+    \StringTok{"Tasmania"}\NormalTok{: os.path.join(DATA\_DIR, }\StringTok{"TAS\_fire\_history"}\NormalTok{, }\StringTok{"list\_fire\_history\_statewide.gdb"}\NormalTok{),}
+    \StringTok{"Western Australia"}\NormalTok{: os.path.join(DATA\_DIR, }\StringTok{"WA\_fire\_history"}\NormalTok{, }\StringTok{"DBCA\_Fire\_History\_DBCA\_060.shp"}\NormalTok{),}
+    \StringTok{"Northern Territory"}\NormalTok{: os.path.join(DATA\_DIR, }\StringTok{"NA\_fire\_history"}\NormalTok{, }\StringTok{"NT\_FireHistory\_SHP.shp"}\NormalTok{),}
+\NormalTok{\}}
+
+\KeywordTok{def}\NormalTok{ \_naive\_dates(series):}
+    \CommentTok{\# Concatenating tz{-}aware dates (e.g. TAS\textquotesingle{}s File Geodatabase) with tz{-}naive}
+    \CommentTok{\# ones forces the combined column to dtype=object, breaking groupby min/max.}
+\NormalTok{    parsed }\OperatorTok{=}\NormalTok{ pd.to\_datetime(series, errors}\OperatorTok{=}\StringTok{"coerce"}\NormalTok{)}
+    \ControlFlowTok{if} \BuiltInTok{getattr}\NormalTok{(parsed.dt, }\StringTok{"tz"}\NormalTok{, }\VariableTok{None}\NormalTok{) }\KeywordTok{is} \KeywordTok{not} \VariableTok{None}\NormalTok{:}
+\NormalTok{        parsed }\OperatorTok{=}\NormalTok{ parsed.dt.tz\_localize(}\VariableTok{None}\NormalTok{)}
+    \ControlFlowTok{return}\NormalTok{ parsed}
+
+\KeywordTok{def}\NormalTok{ load\_nsw(path):}
+\NormalTok{    gdf }\OperatorTok{=}\NormalTok{ gpd.read\_file(path).to\_crs(}\DecValTok{4326}\NormalTok{)}
+    \ControlFlowTok{return}\NormalTok{ gpd.GeoDataFrame(\{}\StringTok{"state"}\NormalTok{: }\StringTok{"New South Wales"}\NormalTok{, }\StringTok{"start\_date"}\NormalTok{: \_naive\_dates(gdf[}\StringTok{"StartDate"}\NormalTok{]),}
+                              \StringTok{"area\_ha"}\NormalTok{: gdf[}\StringTok{"AreaHa"}\NormalTok{], }\StringTok{"geometry"}\NormalTok{: gdf.geometry\}, crs}\OperatorTok{=}\DecValTok{4326}\NormalTok{)}
+
+\KeywordTok{def}\NormalTok{ load\_qld(path):}
+\NormalTok{    gdf }\OperatorTok{=}\NormalTok{ gpd.read\_file(path).to\_crs(}\DecValTok{4326}\NormalTok{)}
+    \ControlFlowTok{return}\NormalTok{ gpd.GeoDataFrame(\{}\StringTok{"state"}\NormalTok{: }\StringTok{"Queensland"}\NormalTok{, }\StringTok{"start\_date"}\NormalTok{: \_naive\_dates(gdf[}\StringTok{"ignitionda"}\NormalTok{]),}
+                              \StringTok{"area\_ha"}\NormalTok{: gdf[}\StringTok{"area\_ha"}\NormalTok{], }\StringTok{"geometry"}\NormalTok{: gdf.geometry\}, crs}\OperatorTok{=}\DecValTok{4326}\NormalTok{)}
+
+\KeywordTok{def}\NormalTok{ load\_vic(path):}
+\NormalTok{    gdf }\OperatorTok{=}\NormalTok{ gpd.read\_file(path).to\_crs(}\DecValTok{4326}\NormalTok{)}
+    \ControlFlowTok{return}\NormalTok{ gpd.GeoDataFrame(\{}\StringTok{"state"}\NormalTok{: }\StringTok{"Victoria"}\NormalTok{, }\StringTok{"start\_date"}\NormalTok{: \_naive\_dates(gdf[}\StringTok{"START\_DATE"}\NormalTok{]),}
+                              \StringTok{"area\_ha"}\NormalTok{: gdf[}\StringTok{"AREA\_HA"}\NormalTok{], }\StringTok{"geometry"}\NormalTok{: gdf.geometry\}, crs}\OperatorTok{=}\DecValTok{4326}\NormalTok{)}
+
+\KeywordTok{def}\NormalTok{ load\_sa(path):}
+\NormalTok{    gdf }\OperatorTok{=}\NormalTok{ gpd.read\_file(path).to\_crs(}\DecValTok{4326}\NormalTok{)}
+    \ControlFlowTok{return}\NormalTok{ gpd.GeoDataFrame(\{}\StringTok{"state"}\NormalTok{: }\StringTok{"South Australia"}\NormalTok{, }\StringTok{"start\_date"}\NormalTok{: \_naive\_dates(gdf[}\StringTok{"FIREDATE"}\NormalTok{]),}
+                              \StringTok{"area\_ha"}\NormalTok{: gdf[}\StringTok{"HECTARES"}\NormalTok{], }\StringTok{"geometry"}\NormalTok{: gdf.geometry\}, crs}\OperatorTok{=}\DecValTok{4326}\NormalTok{)}
+
+\KeywordTok{def}\NormalTok{ load\_tas(path):}
+\NormalTok{    gdf }\OperatorTok{=}\NormalTok{ gpd.read\_file(path, layer}\OperatorTok{=}\StringTok{"list\_fire\_history\_statewide"}\NormalTok{).to\_crs(}\DecValTok{4326}\NormalTok{)  }\CommentTok{\# File Geodatabase, needs the layer name}
+    \ControlFlowTok{return}\NormalTok{ gpd.GeoDataFrame(\{}\StringTok{"state"}\NormalTok{: }\StringTok{"Tasmania"}\NormalTok{, }\StringTok{"start\_date"}\NormalTok{: \_naive\_dates(gdf[}\StringTok{"IGN\_DATE"}\NormalTok{]),}
+                              \StringTok{"area\_ha"}\NormalTok{: gdf[}\StringTok{"FIRE\_AR\_HA"}\NormalTok{], }\StringTok{"geometry"}\NormalTok{: gdf.geometry\}, crs}\OperatorTok{=}\DecValTok{4326}\NormalTok{)}
+
+\KeywordTok{def}\NormalTok{ load\_wa(path):}
+\NormalTok{    gdf }\OperatorTok{=}\NormalTok{ gpd.read\_file(path).to\_crs(}\DecValTok{4326}\NormalTok{)}
+    \ControlFlowTok{return}\NormalTok{ gpd.GeoDataFrame(\{}\StringTok{"state"}\NormalTok{: }\StringTok{"Western Australia"}\NormalTok{, }\StringTok{"start\_date"}\NormalTok{: \_naive\_dates(gdf[}\StringTok{"fih\_date1"}\NormalTok{]),}
+                              \StringTok{"area\_ha"}\NormalTok{: gdf[}\StringTok{"fih\_hectar"}\NormalTok{], }\StringTok{"geometry"}\NormalTok{: gdf.geometry\}, crs}\OperatorTok{=}\DecValTok{4326}\NormalTok{)}
+
+\KeywordTok{def}\NormalTok{ load\_nt(path):}
+    \CommentTok{\# Border{-}adjacent records may carry a neighbouring state\textquotesingle{}s own attribution {-}{-}}
+    \CommentTok{\# not deduplicated against the QLD/WA/SA loaders above; flagged in Limitations.}
+\NormalTok{    gdf }\OperatorTok{=}\NormalTok{ gpd.read\_file(path).to\_crs(}\DecValTok{4326}\NormalTok{)}
+\NormalTok{    state\_map }\OperatorTok{=}\NormalTok{ \{}\StringTok{"NT"}\NormalTok{: }\StringTok{"Northern Territory"}\NormalTok{, }\StringTok{"Qld"}\NormalTok{: }\StringTok{"Queensland"}\NormalTok{, }\StringTok{"QLD"}\NormalTok{: }\StringTok{"Queensland"}\NormalTok{,}
+                 \StringTok{"WA"}\NormalTok{: }\StringTok{"Western Australia"}\NormalTok{, }\StringTok{"SA"}\NormalTok{: }\StringTok{"South Australia"}\NormalTok{\}}
+    \ControlFlowTok{return}\NormalTok{ gpd.GeoDataFrame(\{}\StringTok{"state"}\NormalTok{: gdf[}\StringTok{"state"}\NormalTok{].}\BuiltInTok{map}\NormalTok{(}\KeywordTok{lambda}\NormalTok{ s: state\_map.get(s, s)),}
+                              \StringTok{"start\_date"}\NormalTok{: \_naive\_dates(gdf[}\StringTok{"ignition\_d"}\NormalTok{]),}
+                              \StringTok{"area\_ha"}\NormalTok{: gdf[}\StringTok{"area\_ha"}\NormalTok{], }\StringTok{"geometry"}\NormalTok{: gdf.geometry\}, crs}\OperatorTok{=}\DecValTok{4326}\NormalTok{)}
+
+\NormalTok{fires }\OperatorTok{=}\NormalTok{ pd.concat([}
+\NormalTok{    load\_nsw(FIRE\_SHAPEFILES[}\StringTok{"New South Wales"}\NormalTok{]), load\_qld(FIRE\_SHAPEFILES[}\StringTok{"Queensland"}\NormalTok{]),}
+\NormalTok{    load\_vic(FIRE\_SHAPEFILES[}\StringTok{"Victoria"}\NormalTok{]), load\_sa(FIRE\_SHAPEFILES[}\StringTok{"South Australia"}\NormalTok{]),}
+\NormalTok{    load\_tas(FIRE\_SHAPEFILES[}\StringTok{"Tasmania"}\NormalTok{]), load\_wa(FIRE\_SHAPEFILES[}\StringTok{"Western Australia"}\NormalTok{]),}
+\NormalTok{    load\_nt(FIRE\_SHAPEFILES[}\StringTok{"Northern Territory"}\NormalTok{]),}
+\NormalTok{], ignore\_index}\OperatorTok{=}\VariableTok{True}\NormalTok{)}
+\NormalTok{fires }\OperatorTok{=}\NormalTok{ gpd.GeoDataFrame(fires, geometry}\OperatorTok{=}\StringTok{"geometry"}\NormalTok{, crs}\OperatorTok{=}\DecValTok{4326}\NormalTok{)}
+\NormalTok{fires }\OperatorTok{=}\NormalTok{ fires[fires.geometry.notna() }\OperatorTok{\&}\NormalTok{ fires.geometry.is\_valid]}
+\BuiltInTok{print}\NormalTok{(}\SpecialStringTok{f"Total fire records: }\SpecialCharTok{\{}\BuiltInTok{len}\NormalTok{(fires)}\SpecialCharTok{\}}\SpecialStringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{Admin-2 (LGA-level) division
+boundaries}\label{admin-2-lga-level-division-boundaries}
+
+A small one-time vector pull from Earth Engine
+(\texttt{FAO/GAUL/2015/level2}), cached locally so it only hits Earth
+Engine once.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ImportTok{import}\NormalTok{ ee}
+\ImportTok{import}\NormalTok{ geemap}
+
+\NormalTok{ADMIN2\_CACHE }\OperatorTok{=}\NormalTok{ os.path.join(DATA\_DIR, }\StringTok{"au\_admin2\_boundaries.geojson"}\NormalTok{)}
+\NormalTok{REQUIRED\_STATES }\OperatorTok{=}\NormalTok{ [}\StringTok{"New South Wales"}\NormalTok{, }\StringTok{"Victoria"}\NormalTok{, }\StringTok{"Queensland"}\NormalTok{, }\StringTok{"South Australia"}\NormalTok{,}
+                   \StringTok{"Tasmania"}\NormalTok{, }\StringTok{"Western Australia"}\NormalTok{, }\StringTok{"Northern Territory"}\NormalTok{]}
+
+\NormalTok{ee.Initialize(project}\OperatorTok{=}\StringTok{"project{-}868d3a54{-}1ed8{-}47ec{-}9ad"}\NormalTok{)}
+\NormalTok{gaul }\OperatorTok{=}\NormalTok{ ee.FeatureCollection(}\StringTok{"FAO/GAUL/2015/level2"}\NormalTok{)}
+\NormalTok{au\_fc }\OperatorTok{=}\NormalTok{ (gaul.}\BuiltInTok{filter}\NormalTok{(ee.Filter.eq(}\StringTok{"ADM0\_NAME"}\NormalTok{, }\StringTok{"Australia"}\NormalTok{))}
+\NormalTok{              .}\BuiltInTok{filter}\NormalTok{(ee.Filter.inList(}\StringTok{"ADM1\_NAME"}\NormalTok{, REQUIRED\_STATES)))}
+\NormalTok{admin2 }\OperatorTok{=}\NormalTok{ geemap.ee\_to\_gdf(au\_fc).set\_crs(}\DecValTok{4326}\NormalTok{, allow\_override}\OperatorTok{=}\VariableTok{True}\NormalTok{)}
+\NormalTok{admin2.to\_file(ADMIN2\_CACHE, driver}\OperatorTok{=}\StringTok{"GeoJSON"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{admin2, admin2\_geojson }\OperatorTok{=}\NormalTok{ load\_admin2\_properties(os.path.join(DATA\_DIR, }\StringTok{"au\_admin2\_boundaries.geojson"}\NormalTok{))}
+\BuiltInTok{print}\NormalTok{(}\SpecialStringTok{f"}\SpecialCharTok{\{}\BuiltInTok{len}\NormalTok{(admin2)}\SpecialCharTok{\}}\SpecialStringTok{ admin{-}2 divisions loaded, covering: }\SpecialCharTok{\{}\BuiltInTok{sorted}\NormalTok{(admin2[}\StringTok{\textquotesingle{}ADM1\_NAME\textquotesingle{}}\NormalTok{].unique())}\SpecialCharTok{\}}\SpecialStringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+563 admin-2 divisions loaded, covering: ['New South Wales', 'Northern Territory', 'Queensland', 'South Australia', 'Tasmania', 'Victoria', 'Western Australia']
+\end{verbatim}
+
+\subsection{Defining ``fire-prone''
+divisions}\label{defining-fire-prone-divisions}
+
+Fires are spatially joined to divisions on the fire polygon's
+\textbf{centroid} (fast point-in-polygon; fine here since only ``which
+division is this fire mostly in'' is needed, not exact boundary
+overlap). Fire count alone favours Victoria, which has
+\textasciitilde440k small recorded burns (median \textasciitilde11 ha)
+spread over few divisions, versus NSW/QLD's far fewer but much larger
+fires. Requiring \textbf{both} a minimum fire count \emph{and} a minimum
+average area per fire targets divisions with frequent,
+\emph{significant} fire activity, not just lots of small planned burns.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ImportTok{import}\NormalTok{ warnings}
+
+\NormalTok{fire\_points }\OperatorTok{=}\NormalTok{ fires.copy()}
+\ControlFlowTok{with}\NormalTok{ warnings.catch\_warnings():}
+\NormalTok{    warnings.simplefilter(}\StringTok{"ignore"}\NormalTok{, category}\OperatorTok{=}\PreprocessorTok{UserWarning}\NormalTok{)}
+\NormalTok{    fire\_points[}\StringTok{"geometry"}\NormalTok{] }\OperatorTok{=}\NormalTok{ fires.geometry.centroid  }\CommentTok{\# only need "roughly which division", not a precise centroid}
+
+\NormalTok{joined }\OperatorTok{=}\NormalTok{ gpd.sjoin(fire\_points, admin2, how}\OperatorTok{=}\StringTok{"left"}\NormalTok{, predicate}\OperatorTok{=}\StringTok{"within"}\NormalTok{)}
+
+\NormalTok{division\_summary }\OperatorTok{=}\NormalTok{ (}
+\NormalTok{    joined.dropna(subset}\OperatorTok{=}\NormalTok{[}\StringTok{"ADM2\_NAME"}\NormalTok{])}
+\NormalTok{    .groupby([}\StringTok{"ADM1\_NAME"}\NormalTok{, }\StringTok{"ADM2\_NAME"}\NormalTok{])}
+\NormalTok{    .agg(fire\_count}\OperatorTok{=}\NormalTok{(}\StringTok{"area\_ha"}\NormalTok{, }\StringTok{"size"}\NormalTok{), total\_area\_ha}\OperatorTok{=}\NormalTok{(}\StringTok{"area\_ha"}\NormalTok{, }\StringTok{"sum"}\NormalTok{),}
+\NormalTok{         earliest\_fire}\OperatorTok{=}\NormalTok{(}\StringTok{"start\_date"}\NormalTok{, }\StringTok{"min"}\NormalTok{), latest\_fire}\OperatorTok{=}\NormalTok{(}\StringTok{"start\_date"}\NormalTok{, }\StringTok{"max"}\NormalTok{))}
+\NormalTok{    .reset\_index()}
+\NormalTok{)}
+\NormalTok{division\_summary[}\StringTok{"avg\_area\_ha\_per\_fire"}\NormalTok{] }\OperatorTok{=}\NormalTok{ division\_summary[}\StringTok{"total\_area\_ha"}\NormalTok{] }\OperatorTok{/}\NormalTok{ division\_summary[}\StringTok{"fire\_count"}\NormalTok{]}
+
+\NormalTok{MIN\_FIRE\_COUNT }\OperatorTok{=} \DecValTok{178}     \CommentTok{\# median fire\_count across all divisions with \textgreater{}=1 fire}
+\NormalTok{MIN\_AVG\_AREA\_HA }\OperatorTok{=} \DecValTok{184}    \CommentTok{\# median avg\_area\_ha\_per\_fire across the same set}
+\NormalTok{filtered }\OperatorTok{=}\NormalTok{ division\_summary[}
+\NormalTok{    (division\_summary[}\StringTok{"fire\_count"}\NormalTok{] }\OperatorTok{\textgreater{}=}\NormalTok{ MIN\_FIRE\_COUNT) }\OperatorTok{\&}
+\NormalTok{    (division\_summary[}\StringTok{"avg\_area\_ha\_per\_fire"}\NormalTok{] }\OperatorTok{\textgreater{}=}\NormalTok{ MIN\_AVG\_AREA\_HA)}
+\NormalTok{].sort\_values(}\StringTok{"fire\_count"}\NormalTok{, ascending}\OperatorTok{=}\VariableTok{False}\NormalTok{)}
+\NormalTok{filtered.to\_csv(os.path.join(DATA\_DIR, }\StringTok{"fire\_prone\_divisions.csv"}\NormalTok{), index}\OperatorTok{=}\VariableTok{False}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fire\_prone }\OperatorTok{=}\NormalTok{ pd.read\_csv(os.path.join(DATA\_DIR, }\StringTok{"fire\_prone\_divisions.csv"}\NormalTok{))}
+\BuiltInTok{print}\NormalTok{(}\SpecialStringTok{f"}\SpecialCharTok{\{}\BuiltInTok{len}\NormalTok{(fire\_prone)}\SpecialCharTok{\}}\SpecialStringTok{ fire{-}prone divisions, by state:"}\NormalTok{)}
+\BuiltInTok{print}\NormalTok{(fire\_prone.groupby(}\StringTok{"ADM1\_NAME"}\NormalTok{).size().sort\_values(ascending}\OperatorTok{=}\VariableTok{False}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+133 fire-prone divisions, by state:
+ADM1_NAME
+Western Australia     49
+New South Wales       38
+Queensland            29
+Tasmania               8
+South Australia        5
+Northern Territory     4
+dtype: int64
+\end{verbatim}
+
+Requiring both a high fire count \emph{and} large average fire size
+currently skews the list toward NSW/QLD/WA -- Victoria's fires are
+individually small (median \textasciitilde11 ha), so it drops out
+entirely at these thresholds; lowering \texttt{MIN\_AVG\_AREA\_HA} would
+bring it back in.
+
+\subsection{Major fire events}\label{major-fire-events}
+
+The raw layers mix routine hazard-reduction burns with genuine
+wildfires, and at LGA scale almost every fire-prone division has at
+least one fire recorded in almost every year -- so a naive fire count
+gives virtually no fire-free baseline to compare against. Fires
+\texttt{\textgreater{}=\ 10,000\ ha} are treated as a ``major''
+(landscape-scale) fire, separating real wildfires from routine
+hazard-reduction blocks.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{MAJOR\_FIRE\_HA }\OperatorTok{=} \DecValTok{10000}  \CommentTok{\# landscape{-}scale burn threshold}
+
+\NormalTok{fire\_events }\OperatorTok{=}\NormalTok{ (}
+\NormalTok{    joined.dropna(subset}\OperatorTok{=}\NormalTok{[}\StringTok{"ADM2\_NAME"}\NormalTok{, }\StringTok{"start\_date"}\NormalTok{])}
+\NormalTok{    .merge(filtered[[}\StringTok{"ADM1\_NAME"}\NormalTok{, }\StringTok{"ADM2\_NAME"}\NormalTok{]], on}\OperatorTok{=}\NormalTok{[}\StringTok{"ADM1\_NAME"}\NormalTok{, }\StringTok{"ADM2\_NAME"}\NormalTok{], how}\OperatorTok{=}\StringTok{"inner"}\NormalTok{)}
+\NormalTok{    .assign(year}\OperatorTok{=}\KeywordTok{lambda}\NormalTok{ d: d[}\StringTok{"start\_date"}\NormalTok{].dt.year, is\_major}\OperatorTok{=}\KeywordTok{lambda}\NormalTok{ d: d[}\StringTok{"area\_ha"}\NormalTok{] }\OperatorTok{\textgreater{}=}\NormalTok{ MAJOR\_FIRE\_HA)}
+\NormalTok{    .groupby([}\StringTok{"ADM1\_NAME"}\NormalTok{, }\StringTok{"ADM2\_NAME"}\NormalTok{, }\StringTok{"year"}\NormalTok{])}
+\NormalTok{    .agg(fire\_events}\OperatorTok{=}\NormalTok{(}\StringTok{"area\_ha"}\NormalTok{, }\StringTok{"size"}\NormalTok{), total\_area\_ha}\OperatorTok{=}\NormalTok{(}\StringTok{"area\_ha"}\NormalTok{, }\StringTok{"sum"}\NormalTok{),}
+\NormalTok{         max\_area\_ha}\OperatorTok{=}\NormalTok{(}\StringTok{"area\_ha"}\NormalTok{, }\StringTok{"max"}\NormalTok{), major\_fires}\OperatorTok{=}\NormalTok{(}\StringTok{"is\_major"}\NormalTok{, }\StringTok{"sum"}\NormalTok{))}
+\NormalTok{    .reset\_index()}
+\NormalTok{)}
+\NormalTok{fire\_events[}\StringTok{"year"}\NormalTok{] }\OperatorTok{=}\NormalTok{ fire\_events[}\StringTok{"year"}\NormalTok{].astype(}\BuiltInTok{int}\NormalTok{)}
+\NormalTok{fire\_events.to\_csv(os.path.join(DATA\_DIR, }\StringTok{"fire\_events\_by\_division\_year.csv"}\NormalTok{), index}\OperatorTok{=}\VariableTok{False}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fire\_events }\OperatorTok{=}\NormalTok{ pd.read\_csv(os.path.join(DATA\_DIR, }\StringTok{"fire\_events\_by\_division\_year.csv"}\NormalTok{))}
+\NormalTok{major }\OperatorTok{=}\NormalTok{ fire\_events[fire\_events.major\_fires }\OperatorTok{\textgreater{}} \DecValTok{0}\NormalTok{].copy()}
+\BuiltInTok{print}\NormalTok{(}\SpecialStringTok{f"}\SpecialCharTok{\{}\BuiltInTok{len}\NormalTok{(fire\_events)}\SpecialCharTok{\}}\SpecialStringTok{ division{-}year rows; }\SpecialCharTok{\{}\BuiltInTok{len}\NormalTok{(major)}\SpecialCharTok{\}}\SpecialStringTok{ contain at least one fire \textgreater{}= 10,000 ha, "}
+      \SpecialStringTok{f"across states: }\SpecialCharTok{\{}\BuiltInTok{sorted}\NormalTok{(major[}\StringTok{\textquotesingle{}ADM1\_NAME\textquotesingle{}}\NormalTok{].unique())}\SpecialCharTok{\}}\SpecialStringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+6330 division-year rows; 1143 contain at least one fire >= 10,000 ha, across states: ['New South Wales', 'Northern Territory', 'Queensland', 'South Australia', 'Tasmania', 'Western Australia']
+\end{verbatim}
+
+\subsection{Vegetation recovery: annual NDVI per
+division}\label{vegetation-recovery-annual-ndvi-per-division}
+
+Each division polygon is rasterised against the NDVI grid with
+\texttt{regionmask} (one boolean mask per division), then averaged over
+each division's pixels for every year, 1982-2022 -- giving one NDVI time
+series per division rather than per pixel.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ImportTok{import}\NormalTok{ xarray }\ImportTok{as}\NormalTok{ xr}
+\ImportTok{import}\NormalTok{ regionmask}
+
+\NormalTok{NDVI\_NC }\OperatorTok{=}\NormalTok{ os.path.join(DATA\_DIR, }\StringTok{"AusENDVI{-}clim\_MCD43A4\_gapfilled\_1982\_2022\_0.1.0.nc"}\NormalTok{)}
+\NormalTok{NDVI\_VAR }\OperatorTok{=} \StringTok{"AusENDVI\_clim\_MCD43A4"}
+
+\NormalTok{admin2\_fire\_prone }\OperatorTok{=}\NormalTok{ admin2.merge(filtered[[}\StringTok{"ADM1\_NAME"}\NormalTok{, }\StringTok{"ADM2\_NAME"}\NormalTok{]], on}\OperatorTok{=}\NormalTok{[}\StringTok{"ADM1\_NAME"}\NormalTok{, }\StringTok{"ADM2\_NAME"}\NormalTok{], how}\OperatorTok{=}\StringTok{"inner"}\NormalTok{)}
+
+\NormalTok{ds }\OperatorTok{=}\NormalTok{ xr.open\_dataset(NDVI\_NC, engine}\OperatorTok{=}\StringTok{"netcdf4"}\NormalTok{)}
+\NormalTok{annual }\OperatorTok{=}\NormalTok{ ds[NDVI\_VAR].groupby(}\StringTok{"time.year"}\NormalTok{).mean(dim}\OperatorTok{=}\StringTok{"time"}\NormalTok{).load()}
+\NormalTok{mask3D }\OperatorTok{=}\NormalTok{ regionmask.mask\_3D\_geopandas(admin2\_fire\_prone, annual.longitude, annual.latitude)}
+\NormalTok{div\_annual }\OperatorTok{=}\NormalTok{ annual.where(mask3D).mean(dim}\OperatorTok{=}\NormalTok{[}\StringTok{"latitude"}\NormalTok{, }\StringTok{"longitude"}\NormalTok{], skipna}\OperatorTok{=}\VariableTok{True}\NormalTok{).compute()}
+
+\NormalTok{region\_states }\OperatorTok{=}\NormalTok{ admin2\_fire\_prone.loc[mask3D.region.values, }\StringTok{"ADM1\_NAME"}\NormalTok{].values}
+\NormalTok{region\_names }\OperatorTok{=}\NormalTok{ admin2\_fire\_prone.loc[mask3D.region.values, }\StringTok{"ADM2\_NAME"}\NormalTok{].values}
+\NormalTok{ndvi\_by\_division }\OperatorTok{=}\NormalTok{ div\_annual.to\_pandas()}
+\NormalTok{ndvi\_by\_division.columns }\OperatorTok{=}\NormalTok{ pd.MultiIndex.from\_arrays([region\_states, region\_names], names}\OperatorTok{=}\NormalTok{[}\StringTok{"ADM1\_NAME"}\NormalTok{, }\StringTok{"ADM2\_NAME"}\NormalTok{])}
+\NormalTok{ndvi\_by\_division }\OperatorTok{=}\NormalTok{ ndvi\_by\_division.T}
+\NormalTok{ndvi\_by\_division.to\_csv(os.path.join(DATA\_DIR, }\StringTok{"ndvi\_annual\_by\_division.csv"}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ndvi }\OperatorTok{=}\NormalTok{ pd.read\_csv(os.path.join(DATA\_DIR, }\StringTok{"ndvi\_annual\_by\_division.csv"}\NormalTok{)).set\_index([}\StringTok{"ADM1\_NAME"}\NormalTok{, }\StringTok{"ADM2\_NAME"}\NormalTok{])}
+\NormalTok{ndvi.columns }\OperatorTok{=}\NormalTok{ ndvi.columns.astype(}\BuiltInTok{int}\NormalTok{)}
+\BuiltInTok{print}\NormalTok{(}\SpecialStringTok{f"NDVI table: }\SpecialCharTok{\{}\NormalTok{ndvi}\SpecialCharTok{.}\NormalTok{shape[}\DecValTok{0}\NormalTok{]}\SpecialCharTok{\}}\SpecialStringTok{ divisions x }\SpecialCharTok{\{}\NormalTok{ndvi}\SpecialCharTok{.}\NormalTok{shape[}\DecValTok{1}\NormalTok{]}\SpecialCharTok{\}}\SpecialStringTok{ years (}\SpecialCharTok{\{}\NormalTok{ndvi}\SpecialCharTok{.}\NormalTok{columns}\SpecialCharTok{.}\BuiltInTok{min}\NormalTok{()}\SpecialCharTok{\}}\SpecialStringTok{{-}}\SpecialCharTok{\{}\NormalTok{ndvi}\SpecialCharTok{.}\NormalTok{columns}\SpecialCharTok{.}\BuiltInTok{max}\NormalTok{()}\SpecialCharTok{\}}\SpecialStringTok{)"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+NDVI table: 133 divisions x 41 years (1982-2022)
+\end{verbatim}
+
+\subsection{Post-fire heat exposure}\label{post-fire-heat-exposure}
+
+The heat data are downloaded from \textbf{Google Earth Engine}, using
+the ERA5-Land daily aggregate product
+(\texttt{ECMWF/ERA5\_LAND/DAILY\_AGGR}) and the
+\texttt{temperature\_2m\_max} band. For each year from 1982 to 2022, the
+pipeline counts days where daily maximum temperature reaches at least
+35C (\texttt{hot\_days\_ge35}) and 40C (\texttt{hot\_days\_ge40}), then
+averages those counts over each fire-prone division. This gives a
+gridded, division-level heat-exposure measure that is spatially
+consistent with the LGA-level fire and recovery analysis.
+
+The Earth Engine extraction is shown below for transparency but is not
+run during report rendering. The rendered report instead reads the
+cached file \texttt{heat\_stress\_by\_division\_year.csv}. Division
+geometries are simplified before upload to reduce the Earth Engine
+request payload; because ERA5-Land is a coarse climate grid, this
+simplification is not expected to materially change a division-level
+annual average.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ImportTok{import}\NormalTok{ ee}
+\ImportTok{import}\NormalTok{ geemap}
+
+\NormalTok{ee.Initialize(project}\OperatorTok{=}\StringTok{"project{-}868d3a54{-}1ed8{-}47ec{-}9ad"}\NormalTok{)}
+\NormalTok{admin2\_fp }\OperatorTok{=}\NormalTok{ admin2.merge(fire\_prone[[}\StringTok{"ADM1\_NAME"}\NormalTok{, }\StringTok{"ADM2\_NAME"}\NormalTok{]], on}\OperatorTok{=}\NormalTok{[}\StringTok{"ADM1\_NAME"}\NormalTok{, }\StringTok{"ADM2\_NAME"}\NormalTok{]).reset\_index(drop}\OperatorTok{=}\VariableTok{True}\NormalTok{)}
+\NormalTok{admin2\_fp[}\StringTok{"geometry"}\NormalTok{] }\OperatorTok{=}\NormalTok{ admin2\_fp.geometry.simplify(}\FloatTok{0.01}\NormalTok{, preserve\_topology}\OperatorTok{=}\VariableTok{True}\NormalTok{)}
+\NormalTok{fc\_all }\OperatorTok{=}\NormalTok{ geemap.geopandas\_to\_ee(admin2\_fp)}
+
+\NormalTok{era5 }\OperatorTok{=}\NormalTok{ ee.ImageCollection(}\StringTok{"ECMWF/ERA5\_LAND/DAILY\_AGGR"}\NormalTok{).select(}\StringTok{"temperature\_2m\_max"}\NormalTok{)}
+\NormalTok{HOT35\_K, HOT40\_K }\OperatorTok{=} \FloatTok{308.15}\NormalTok{, }\FloatTok{313.15}  \CommentTok{\# 35C / 40C in Kelvin}
+
+\KeywordTok{def}\NormalTok{ per\_year(y):}
+\NormalTok{    y }\OperatorTok{=}\NormalTok{ ee.Number(y)}
+\NormalTok{    start }\OperatorTok{=}\NormalTok{ ee.Date.fromYMD(y, }\DecValTok{1}\NormalTok{, }\DecValTok{1}\NormalTok{)}
+\NormalTok{    coll }\OperatorTok{=}\NormalTok{ era5.filterDate(start, start.advance(}\DecValTok{1}\NormalTok{, }\StringTok{"year"}\NormalTok{))}
+\NormalTok{    hot35 }\OperatorTok{=}\NormalTok{ coll.}\BuiltInTok{map}\NormalTok{(}\KeywordTok{lambda}\NormalTok{ img: img.gt(HOT35\_K)).}\BuiltInTok{sum}\NormalTok{().rename(}\StringTok{"hot\_days\_ge35"}\NormalTok{)}
+\NormalTok{    hot40 }\OperatorTok{=}\NormalTok{ coll.}\BuiltInTok{map}\NormalTok{(}\KeywordTok{lambda}\NormalTok{ img: img.gt(HOT40\_K)).}\BuiltInTok{sum}\NormalTok{().rename(}\StringTok{"hot\_days\_ge40"}\NormalTok{)}
+\NormalTok{    mean\_tmax }\OperatorTok{=}\NormalTok{ coll.mean().subtract(}\FloatTok{273.15}\NormalTok{).rename(}\StringTok{"mean\_tmax\_c"}\NormalTok{)}
+\NormalTok{    combo }\OperatorTok{=}\NormalTok{ hot35.addBands(hot40).addBands(mean\_tmax)}
+    \ControlFlowTok{return}\NormalTok{ combo.reduceRegions(collection}\OperatorTok{=}\NormalTok{fc\_all, reducer}\OperatorTok{=}\NormalTok{ee.Reducer.mean(), scale}\OperatorTok{=}\DecValTok{11132}\NormalTok{).}\BuiltInTok{map}\NormalTok{(}\KeywordTok{lambda}\NormalTok{ f: f.}\BuiltInTok{set}\NormalTok{(}\StringTok{"year"}\NormalTok{, y))}
+
+\NormalTok{all\_rows }\OperatorTok{=}\NormalTok{ []}
+\ControlFlowTok{for}\NormalTok{ start\_yr }\KeywordTok{in} \BuiltInTok{range}\NormalTok{(}\DecValTok{1982}\NormalTok{, }\DecValTok{2023}\NormalTok{, }\DecValTok{5}\NormalTok{):  }\CommentTok{\# chunked into 5{-}year requests to stay under payload/time limits}
+\NormalTok{    yrs }\OperatorTok{=} \BuiltInTok{list}\NormalTok{(}\BuiltInTok{range}\NormalTok{(start\_yr, }\BuiltInTok{min}\NormalTok{(start\_yr }\OperatorTok{+} \DecValTok{5}\NormalTok{, }\DecValTok{2023}\NormalTok{)))}
+\NormalTok{    yearly\_fc }\OperatorTok{=}\NormalTok{ ee.FeatureCollection(ee.List(yrs).}\BuiltInTok{map}\NormalTok{(per\_year)).flatten()}
+\NormalTok{    all\_rows.extend([f[}\StringTok{"properties"}\NormalTok{] }\ControlFlowTok{for}\NormalTok{ f }\KeywordTok{in}\NormalTok{ yearly\_fc.getInfo()[}\StringTok{"features"}\NormalTok{]])}
+
+\NormalTok{heat }\OperatorTok{=}\NormalTok{ pd.DataFrame(all\_rows)}
+\NormalTok{heat[}\StringTok{"year"}\NormalTok{] }\OperatorTok{=}\NormalTok{ heat[}\StringTok{"year"}\NormalTok{].astype(}\BuiltInTok{int}\NormalTok{)}
+\NormalTok{heat }\OperatorTok{=}\NormalTok{ heat[[}\StringTok{"ADM1\_NAME"}\NormalTok{, }\StringTok{"ADM2\_NAME"}\NormalTok{, }\StringTok{"year"}\NormalTok{, }\StringTok{"hot\_days\_ge35"}\NormalTok{, }\StringTok{"hot\_days\_ge40"}\NormalTok{, }\StringTok{"mean\_tmax\_c"}\NormalTok{]]}
+\NormalTok{heat.to\_csv(os.path.join(DATA\_DIR, }\StringTok{"heat\_stress\_by\_division\_year.csv"}\NormalTok{), index}\OperatorTok{=}\VariableTok{False}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{heat }\OperatorTok{=}\NormalTok{ pd.read\_csv(os.path.join(DATA\_DIR, }\StringTok{"heat\_stress\_by\_division\_year.csv"}\NormalTok{))}
+\NormalTok{heat\_piv }\OperatorTok{=}\NormalTok{ heat.pivot\_table(index}\OperatorTok{=}\NormalTok{[}\StringTok{"ADM1\_NAME"}\NormalTok{, }\StringTok{"ADM2\_NAME"}\NormalTok{], columns}\OperatorTok{=}\StringTok{"year"}\NormalTok{, values}\OperatorTok{=}\StringTok{"hot\_days\_ge35"}\NormalTok{)}
+\NormalTok{HEAT\_BASELINE\_YEARS }\OperatorTok{=} \BuiltInTok{list}\NormalTok{(heat\_piv.columns)}
+\NormalTok{heat\_baseline\_mean }\OperatorTok{=}\NormalTok{ heat\_piv.mean(axis}\OperatorTok{=}\DecValTok{1}\NormalTok{)}
+\BuiltInTok{print}\NormalTok{(}\SpecialStringTok{f"}\SpecialCharTok{\{}\NormalTok{heat}\SpecialCharTok{.}\NormalTok{shape[}\DecValTok{0}\NormalTok{]}\SpecialCharTok{\}}\SpecialStringTok{ division{-}year rows, }\SpecialCharTok{\{}\NormalTok{heat[}\StringTok{\textquotesingle{}ADM2\_NAME\textquotesingle{}}\NormalTok{]}\SpecialCharTok{.}\NormalTok{nunique()}\SpecialCharTok{\}}\SpecialStringTok{ divisions, "}
+      \SpecialStringTok{f"}\SpecialCharTok{\{}\NormalTok{heat[}\StringTok{\textquotesingle{}year\textquotesingle{}}\NormalTok{]}\SpecialCharTok{.}\BuiltInTok{min}\NormalTok{()}\SpecialCharTok{\}}\SpecialStringTok{{-}}\SpecialCharTok{\{}\NormalTok{heat[}\StringTok{\textquotesingle{}year\textquotesingle{}}\NormalTok{]}\SpecialCharTok{.}\BuiltInTok{max}\NormalTok{()}\SpecialCharTok{\}}\SpecialStringTok{, states: }\SpecialCharTok{\{}\BuiltInTok{sorted}\NormalTok{(heat[}\StringTok{\textquotesingle{}ADM1\_NAME\textquotesingle{}}\NormalTok{].unique())}\SpecialCharTok{\}}\SpecialStringTok{"}\NormalTok{)}
+\BuiltInTok{print}\NormalTok{(}\SpecialStringTok{f"Heat anomaly baseline: }\SpecialCharTok{\{}\BuiltInTok{min}\NormalTok{(HEAT\_BASELINE\_YEARS)}\SpecialCharTok{\}}\SpecialStringTok{{-}}\SpecialCharTok{\{}\BuiltInTok{max}\NormalTok{(HEAT\_BASELINE\_YEARS)}\SpecialCharTok{\}}\SpecialStringTok{ available{-}data local baseline"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+5453 division-year rows, 133 divisions, 1982-2022, states: ['New South Wales', 'Northern Territory', 'Queensland', 'South Australia', 'Tasmania', 'Western Australia']
+Heat anomaly baseline: 1982-2022 available-data local baseline
+\end{verbatim}
+
+\subsection{Indicator-species
+sightings}\label{indicator-species-sightings}
+
+Six canopy/hollow-dependent species -- koala, greater glider,
+yellow-bellied glider, yellow-tailed black-cockatoo, powerful owl, and
+little lorikeet -- are pulled from the Atlas of Living Australia via
+\texttt{galah}, across all 7 states/territories, 1990-2026.
+Citizen-science reporting effort has grown enormously nation-wide since
+the 1990s (more observers, apps like iNaturalist), so each division's
+sightings are later expressed as a \textbf{share of that year's total
+sightings across all fire-prone divisions} -- a division whose wildlife
+is genuinely declining relative to everywhere else should lose share
+over time even while the nationwide raw count keeps climbing.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ImportTok{import}\NormalTok{ galah}
+
+\NormalTok{galah.galah\_config(email}\OperatorTok{=}\StringTok{"hieudonguyenthanh2906@gmail.com"}\NormalTok{)  }\CommentTok{\# must be registered at ala.org.au first}
+\NormalTok{states\_to\_pull }\OperatorTok{=}\NormalTok{ [}\StringTok{"New South Wales"}\NormalTok{, }\StringTok{"Victoria"}\NormalTok{, }\StringTok{"Queensland"}\NormalTok{, }\StringTok{"South Australia"}\NormalTok{,}
+                  \StringTok{"Tasmania"}\NormalTok{, }\StringTok{"Western Australia"}\NormalTok{, }\StringTok{"Northern Territory"}\NormalTok{]}
+\NormalTok{indicator\_species }\OperatorTok{=}\NormalTok{ [}
+    \StringTok{"Phascolarctos cinereus"}\NormalTok{,  }\CommentTok{\# Koala}
+    \StringTok{"Petauroides volans"}\NormalTok{,      }\CommentTok{\# Greater Glider}
+    \StringTok{"Petaurus australis"}\NormalTok{,      }\CommentTok{\# Yellow{-}bellied Glider}
+    \StringTok{"Zanda funerea"}\NormalTok{,           }\CommentTok{\# Yellow{-}tailed Black{-}Cockatoo}
+    \StringTok{"Ninox strenua"}\NormalTok{,           }\CommentTok{\# Powerful Owl}
+    \StringTok{"Parvipsitta pusilla"}\NormalTok{,     }\CommentTok{\# Little Lorikeet}
+\NormalTok{]}
+\NormalTok{all\_sightings }\OperatorTok{=}\NormalTok{ [}
+\NormalTok{    galah.atlas\_occurrences(taxa}\OperatorTok{=}\NormalTok{indicator\_species,}
+\NormalTok{                             filters}\OperatorTok{=}\NormalTok{[}\StringTok{"year\textgreater{}=1990"}\NormalTok{, }\StringTok{"year\textless{}=2026"}\NormalTok{, }\SpecialStringTok{f"stateProvince=}\SpecialCharTok{\{}\NormalTok{state}\SpecialCharTok{\}}\SpecialStringTok{"}\NormalTok{])}
+    \ControlFlowTok{for}\NormalTok{ state }\KeywordTok{in}\NormalTok{ states\_to\_pull}
+\NormalTok{]}
+\NormalTok{pd.concat(all\_sightings, ignore\_index}\OperatorTok{=}\VariableTok{True}\NormalTok{).to\_csv(}
+\NormalTok{    os.path.join(DATA\_DIR, }\StringTok{"canopy\_indicators\_all\_states.csv"}\NormalTok{), index}\OperatorTok{=}\VariableTok{False}
+\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{animals }\OperatorTok{=}\NormalTok{ pd.read\_csv(os.path.join(DATA\_DIR, }\StringTok{"canopy\_indicators\_all\_states.csv"}\NormalTok{),}
+\NormalTok{                       usecols}\OperatorTok{=}\NormalTok{[}\StringTok{"decimalLatitude"}\NormalTok{, }\StringTok{"decimalLongitude"}\NormalTok{, }\StringTok{"eventDate"}\NormalTok{, }\StringTok{"scientificName"}\NormalTok{])}
+\NormalTok{animals }\OperatorTok{=}\NormalTok{ animals.dropna(subset}\OperatorTok{=}\NormalTok{[}\StringTok{"decimalLatitude"}\NormalTok{, }\StringTok{"decimalLongitude"}\NormalTok{, }\StringTok{"eventDate"}\NormalTok{])}
+\NormalTok{animals[}\StringTok{"eventDate"}\NormalTok{] }\OperatorTok{=}\NormalTok{ pd.to\_datetime(animals[}\StringTok{"eventDate"}\NormalTok{], errors}\OperatorTok{=}\StringTok{"coerce"}\NormalTok{, utc}\OperatorTok{=}\VariableTok{True}\NormalTok{)}
+\NormalTok{animals }\OperatorTok{=}\NormalTok{ animals.dropna(subset}\OperatorTok{=}\NormalTok{[}\StringTok{"eventDate"}\NormalTok{])}
+\NormalTok{animals[}\StringTok{"year"}\NormalTok{] }\OperatorTok{=}\NormalTok{ animals[}\StringTok{"eventDate"}\NormalTok{].dt.year}
+
+\NormalTok{animals\_gdf }\OperatorTok{=}\NormalTok{ gpd.GeoDataFrame(animals, geometry}\OperatorTok{=}\NormalTok{gpd.points\_from\_xy(animals[}\StringTok{"decimalLongitude"}\NormalTok{], animals[}\StringTok{"decimalLatitude"}\NormalTok{]), crs}\OperatorTok{=}\DecValTok{4326}\NormalTok{)}
+\NormalTok{animals\_joined }\OperatorTok{=}\NormalTok{ gpd.sjoin(animals\_gdf, admin2, how}\OperatorTok{=}\StringTok{"left"}\NormalTok{, predicate}\OperatorTok{=}\StringTok{"within"}\NormalTok{)}
+\NormalTok{animals\_joined }\OperatorTok{=}\NormalTok{ animals\_joined.merge(fire\_prone[[}\StringTok{"ADM1\_NAME"}\NormalTok{, }\StringTok{"ADM2\_NAME"}\NormalTok{]], on}\OperatorTok{=}\NormalTok{[}\StringTok{"ADM1\_NAME"}\NormalTok{, }\StringTok{"ADM2\_NAME"}\NormalTok{], how}\OperatorTok{=}\StringTok{"inner"}\NormalTok{)}
+
+\NormalTok{sightings\_by\_year }\OperatorTok{=}\NormalTok{ animals\_joined.groupby([}\StringTok{"ADM1\_NAME"}\NormalTok{, }\StringTok{"ADM2\_NAME"}\NormalTok{, }\StringTok{"year"}\NormalTok{]).size().rename(}\StringTok{"sightings"}\NormalTok{).reset\_index()}
+\NormalTok{sightings\_by\_year.to\_csv(os.path.join(DATA\_DIR, }\StringTok{"animal\_sightings\_by\_division\_year.csv"}\NormalTok{), index}\OperatorTok{=}\VariableTok{False}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{sightings\_raw }\OperatorTok{=}\NormalTok{ pd.read\_csv(os.path.join(DATA\_DIR, }\StringTok{"animal\_sightings\_by\_division\_year.csv"}\NormalTok{))}
+\BuiltInTok{print}\NormalTok{(}\SpecialStringTok{f"}\SpecialCharTok{\{}\NormalTok{sightings\_raw[}\StringTok{\textquotesingle{}sightings\textquotesingle{}}\NormalTok{]}\SpecialCharTok{.}\BuiltInTok{sum}\NormalTok{()}\SpecialCharTok{\}}\SpecialStringTok{ sightings across }\SpecialCharTok{\{}\NormalTok{sightings\_raw[}\StringTok{\textquotesingle{}ADM2\_NAME\textquotesingle{}}\NormalTok{]}\SpecialCharTok{.}\NormalTok{nunique()}\SpecialCharTok{\}}\SpecialStringTok{ divisions, "}
+      \SpecialStringTok{f"states: }\SpecialCharTok{\{}\BuiltInTok{sorted}\NormalTok{(sightings\_raw[}\StringTok{\textquotesingle{}ADM1\_NAME\textquotesingle{}}\NormalTok{].unique())}\SpecialCharTok{\}}\SpecialStringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+273844 sightings across 80 divisions, states: ['New South Wales', 'Northern Territory', 'Queensland', 'South Australia', 'Tasmania', 'Western Australia']
+\end{verbatim}
+
+\section{Building the event-level recovery
+dataset}\label{building-the-event-level-recovery-dataset}
+
+This section turns the cached annual datasets into one row per major
+fire event. Each row contains the fire year, fire severity, vegetation
+recovery, sightings recovery, and post-fire heat anomaly for the same
+division.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Feature
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Construction
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Interpretation
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Pre-fire baseline & Mean of \texttt{Y-1} and \texttt{Y-2} & Local
+condition before the fire \\
+Fire-year value & Annual value in fire year \texttt{Y} & Proxy for the
+disturbance trough \\
+Recovery value & Best available value from \texttt{Y+3}, \texttt{Y+4},
+\texttt{Y+5} & Medium-term post-fire recovery \\
+Recovery ratio &
+\texttt{(recovery\ -\ fire-year)\ /\ (pre-fire\ baseline\ -\ fire-year)}
+& Around 1 = back to pre-fire baseline \\
+Heat anomaly & Mean hot days from \texttt{Y} to \texttt{Y+3} minus the
+division's own mean annual hot-day count & Early post-fire heat stress
+relative to local conditions \\
+Recovery gap &
+\texttt{log(NDVI\ recovery\ ratio)\ -\ log(sightings\ recovery\ ratio)}
+& Positive = vegetation recovers more strongly than wildlife
+sightings \\
+\end{longtable}
+
+\begin{tcolorbox}[enhanced jigsaw, left=2mm, opacityback=0, colback=white, breakable, arc=.35mm, bottomrule=.15mm, rightrule=.15mm, toprule=.15mm, colframe=quarto-callout-note-color-frame, leftrule=.75mm]
+\begin{minipage}[t]{5.5mm}
+\textcolor{quarto-callout-note-color}{\faInfo}
+\end{minipage}%
+\begin{minipage}[t]{\textwidth - 5.5mm}
+
+\vspace{-3mm}\textbf{Method note}\vspace{3mm}
+
+The recovery ratio is adapted from Frazier et al.~(2018), but it is not
+a direct copy of their pixel-level LandTrendr method. Here, the
+disturbance trough is approximated with the annual division-wide
+fire-year value, and the recovery window uses the best available value
+from \texttt{Y+3} to \texttt{Y+5}. The same structure is applied to NDVI
+and sightings share so the two recovery signals can be compared on a
+common scale.
+
+\end{minipage}%
+\end{tcolorbox}
+
+Sightings are converted to each division's \textbf{share} of that year's
+total sightings across all fire-prone divisions before the recovery
+ratio is calculated. This does not remove all observer bias, but it
+reduces the effect of the nationwide growth in citizen-science records
+over time.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{div\_year }\OperatorTok{=}\NormalTok{ sightings\_raw.groupby([}\StringTok{"ADM1\_NAME"}\NormalTok{, }\StringTok{"ADM2\_NAME"}\NormalTok{, }\StringTok{"year"}\NormalTok{])[}\StringTok{"sightings"}\NormalTok{].}\BuiltInTok{sum}\NormalTok{().reset\_index()}
+\NormalTok{total\_per\_year }\OperatorTok{=}\NormalTok{ div\_year.groupby(}\StringTok{"year"}\NormalTok{)[}\StringTok{"sightings"}\NormalTok{].}\BuiltInTok{sum}\NormalTok{().rename(}\StringTok{"total\_sightings\_all\_divs"}\NormalTok{)}
+\NormalTok{div\_year }\OperatorTok{=}\NormalTok{ div\_year.merge(total\_per\_year, on}\OperatorTok{=}\StringTok{"year"}\NormalTok{)}
+\NormalTok{div\_year[}\StringTok{"share"}\NormalTok{] }\OperatorTok{=}\NormalTok{ div\_year[}\StringTok{"sightings"}\NormalTok{] }\OperatorTok{/}\NormalTok{ div\_year[}\StringTok{"total\_sightings\_all\_divs"}\NormalTok{]}
+\NormalTok{share\_piv }\OperatorTok{=}\NormalTok{ div\_year.pivot\_table(index}\OperatorTok{=}\NormalTok{[}\StringTok{"ADM1\_NAME"}\NormalTok{, }\StringTok{"ADM2\_NAME"}\NormalTok{], columns}\OperatorTok{=}\StringTok{"year"}\NormalTok{, values}\OperatorTok{=}\StringTok{"share"}\NormalTok{)}
+\NormalTok{total\_sightings\_per\_div }\OperatorTok{=}\NormalTok{ sightings\_raw.groupby([}\StringTok{"ADM1\_NAME"}\NormalTok{, }\StringTok{"ADM2\_NAME"}\NormalTok{])[}\StringTok{"sightings"}\NormalTok{].}\BuiltInTok{sum}\NormalTok{()}
+
+\NormalTok{PRE\_YEARS, HEAT\_POST\_LAG, RECOVERY\_POST\_LAGS, SMOOTH }\OperatorTok{=} \DecValTok{2}\NormalTok{, }\DecValTok{3}\NormalTok{, [}\DecValTok{3}\NormalTok{, }\DecValTok{4}\NormalTok{, }\DecValTok{5}\NormalTok{], }\FloatTok{1e{-}6}
+
+\NormalTok{records }\OperatorTok{=}\NormalTok{ []}
+\ControlFlowTok{for}\NormalTok{ \_, r }\KeywordTok{in}\NormalTok{ major.iterrows():}
+\NormalTok{    state, div, year }\OperatorTok{=}\NormalTok{ r[}\StringTok{"ADM1\_NAME"}\NormalTok{], r[}\StringTok{"ADM2\_NAME"}\NormalTok{], }\BuiltInTok{int}\NormalTok{(r[}\StringTok{"year"}\NormalTok{])}
+\NormalTok{    key }\OperatorTok{=}\NormalTok{ (state, div)}
+    \ControlFlowTok{if}\NormalTok{ key }\KeywordTok{not} \KeywordTok{in}\NormalTok{ ndvi.index }\KeywordTok{or}\NormalTok{ key }\KeywordTok{not} \KeywordTok{in}\NormalTok{ heat\_piv.index:}
+        \ControlFlowTok{continue}
+
+\NormalTok{    ndvi\_row, heat\_row }\OperatorTok{=}\NormalTok{ ndvi.loc[key], heat\_piv.loc[key]}
+\NormalTok{    pre\_years }\OperatorTok{=}\NormalTok{ [year }\OperatorTok{{-}}\NormalTok{ k }\ControlFlowTok{for}\NormalTok{ k }\KeywordTok{in} \BuiltInTok{range}\NormalTok{(}\DecValTok{1}\NormalTok{, PRE\_YEARS }\OperatorTok{+} \DecValTok{1}\NormalTok{)]}
+\NormalTok{    heat\_post\_years }\OperatorTok{=}\NormalTok{ [year }\OperatorTok{+}\NormalTok{ k }\ControlFlowTok{for}\NormalTok{ k }\KeywordTok{in} \BuiltInTok{range}\NormalTok{(}\DecValTok{0}\NormalTok{, HEAT\_POST\_LAG }\OperatorTok{+} \DecValTok{1}\NormalTok{)]}
+\NormalTok{    recovery\_post\_years }\OperatorTok{=}\NormalTok{ [year }\OperatorTok{+}\NormalTok{ k }\ControlFlowTok{for}\NormalTok{ k }\KeywordTok{in}\NormalTok{ RECOVERY\_POST\_LAGS]}
+
+\NormalTok{    pre\_ndvi }\OperatorTok{=}\NormalTok{ [v }\ControlFlowTok{for}\NormalTok{ v }\KeywordTok{in}\NormalTok{ (ndvi\_row.get(y) }\ControlFlowTok{for}\NormalTok{ y }\KeywordTok{in}\NormalTok{ pre\_years) }\ControlFlowTok{if}\NormalTok{ pd.notna(v)]}
+\NormalTok{    y0\_ndvi }\OperatorTok{=}\NormalTok{ ndvi\_row.get(year)}
+\NormalTok{    post\_ndvi }\OperatorTok{=}\NormalTok{ [v }\ControlFlowTok{for}\NormalTok{ v }\KeywordTok{in}\NormalTok{ (ndvi\_row.get(y) }\ControlFlowTok{for}\NormalTok{ y }\KeywordTok{in}\NormalTok{ recovery\_post\_years) }\ControlFlowTok{if}\NormalTok{ pd.notna(v)]}
+    \ControlFlowTok{if} \KeywordTok{not}\NormalTok{ pre\_ndvi }\KeywordTok{or}\NormalTok{ pd.isna(y0\_ndvi) }\KeywordTok{or} \KeywordTok{not}\NormalTok{ post\_ndvi:}
+        \ControlFlowTok{continue}
+\NormalTok{    ndvi\_baseline }\OperatorTok{=}\NormalTok{ np.mean(pre\_ndvi)}
+\NormalTok{    ndvi\_disturbance }\OperatorTok{=}\NormalTok{ ndvi\_baseline }\OperatorTok{{-}}\NormalTok{ y0\_ndvi}
+    \ControlFlowTok{if}\NormalTok{ ndvi\_disturbance }\OperatorTok{\textless{}=} \DecValTok{0}\NormalTok{:}
+        \ControlFlowTok{continue}
+\NormalTok{    ndvi\_ratio }\OperatorTok{=}\NormalTok{ (}\BuiltInTok{max}\NormalTok{(post\_ndvi) }\OperatorTok{{-}}\NormalTok{ y0\_ndvi) }\OperatorTok{/}\NormalTok{ ndvi\_disturbance}
+
+\NormalTok{    sight\_ratio }\OperatorTok{=}\NormalTok{ np.nan}
+    \ControlFlowTok{if}\NormalTok{ key }\KeywordTok{in}\NormalTok{ share\_piv.index:}
+\NormalTok{        srow }\OperatorTok{=}\NormalTok{ share\_piv.loc[key]}
+\NormalTok{        pre\_share }\OperatorTok{=}\NormalTok{ [v }\ControlFlowTok{for}\NormalTok{ v }\KeywordTok{in}\NormalTok{ (srow.get(y) }\ControlFlowTok{for}\NormalTok{ y }\KeywordTok{in}\NormalTok{ pre\_years) }\ControlFlowTok{if}\NormalTok{ pd.notna(v)]}
+\NormalTok{        y0\_share }\OperatorTok{=}\NormalTok{ srow.get(year)}
+\NormalTok{        post\_share }\OperatorTok{=}\NormalTok{ [v }\ControlFlowTok{for}\NormalTok{ v }\KeywordTok{in}\NormalTok{ (srow.get(y) }\ControlFlowTok{for}\NormalTok{ y }\KeywordTok{in}\NormalTok{ recovery\_post\_years) }\ControlFlowTok{if}\NormalTok{ pd.notna(v)]}
+        \ControlFlowTok{if}\NormalTok{ pre\_share }\KeywordTok{and}\NormalTok{ pd.notna(y0\_share) }\KeywordTok{and}\NormalTok{ post\_share:}
+\NormalTok{            share\_baseline }\OperatorTok{=}\NormalTok{ np.mean(pre\_share) }\OperatorTok{+}\NormalTok{ SMOOTH}
+\NormalTok{            y0\_share\_s }\OperatorTok{=}\NormalTok{ y0\_share }\OperatorTok{+}\NormalTok{ SMOOTH}
+\NormalTok{            share\_disturbance }\OperatorTok{=}\NormalTok{ share\_baseline }\OperatorTok{{-}}\NormalTok{ y0\_share\_s}
+            \ControlFlowTok{if}\NormalTok{ share\_disturbance }\OperatorTok{\textgreater{}} \DecValTok{0}\NormalTok{:}
+\NormalTok{                sight\_ratio }\OperatorTok{=}\NormalTok{ (}\BuiltInTok{max}\NormalTok{(post\_share) }\OperatorTok{+}\NormalTok{ SMOOTH }\OperatorTok{{-}}\NormalTok{ y0\_share\_s) }\OperatorTok{/}\NormalTok{ share\_disturbance}
+
+\NormalTok{    post\_heat }\OperatorTok{=}\NormalTok{ [v }\ControlFlowTok{for}\NormalTok{ v }\KeywordTok{in}\NormalTok{ (heat\_row.get(y) }\ControlFlowTok{for}\NormalTok{ y }\KeywordTok{in}\NormalTok{ heat\_post\_years) }\ControlFlowTok{if}\NormalTok{ pd.notna(v)]}
+    \ControlFlowTok{if} \KeywordTok{not}\NormalTok{ post\_heat:}
+        \ControlFlowTok{continue}
+\NormalTok{    heat\_post\_mean }\OperatorTok{=}\NormalTok{ np.mean(post\_heat)}
+\NormalTok{    heat\_anomaly }\OperatorTok{=}\NormalTok{ heat\_post\_mean }\OperatorTok{{-}}\NormalTok{ heat\_baseline\_mean.get(key, np.nan)}
+
+\NormalTok{    records.append(\{}
+        \StringTok{"ADM1\_NAME"}\NormalTok{: state, }\StringTok{"ADM2\_NAME"}\NormalTok{: div, }\StringTok{"fire\_year"}\NormalTok{: year,}
+        \StringTok{"max\_area\_ha"}\NormalTok{: r[}\StringTok{"max\_area\_ha"}\NormalTok{], }\StringTok{"major\_fires"}\NormalTok{: r[}\StringTok{"major\_fires"}\NormalTok{],}
+        \StringTok{"ndvi\_recovery\_ratio"}\NormalTok{: ndvi\_ratio, }\StringTok{"sightings\_recovery\_ratio"}\NormalTok{: sight\_ratio,}
+        \StringTok{"heat\_anomaly\_postfire"}\NormalTok{: heat\_anomaly,}
+        \StringTok{"division\_total\_sightings"}\NormalTok{: total\_sightings\_per\_div.get(key, }\DecValTok{0}\NormalTok{),}
+\NormalTok{    \})}
+
+\NormalTok{events\_all }\OperatorTok{=}\NormalTok{ pd.DataFrame(records)}
+\CommentTok{\# RRI can be zero/negative (best post{-}fire value never exceeds the fire{-}year value); can\textquotesingle{}t log{-}transform those.}
+\NormalTok{events\_all }\OperatorTok{=}\NormalTok{ events\_all[events\_all[}\StringTok{"ndvi\_recovery\_ratio"}\NormalTok{] }\OperatorTok{\textgreater{}} \DecValTok{0}\NormalTok{].copy()}
+\NormalTok{events\_all[}\StringTok{"log\_ndvi\_ratio"}\NormalTok{] }\OperatorTok{=}\NormalTok{ np.log(events\_all[}\StringTok{"ndvi\_recovery\_ratio"}\NormalTok{])}
+\NormalTok{events\_all[}\StringTok{"log\_severity"}\NormalTok{] }\OperatorTok{=}\NormalTok{ np.log(events\_all[}\StringTok{"max\_area\_ha"}\NormalTok{])}
+
+\NormalTok{HABITAT\_MIN\_SIGHTINGS }\OperatorTok{=} \DecValTok{200}
+\NormalTok{events }\OperatorTok{=}\NormalTok{ events\_all[(events\_all[}\StringTok{"division\_total\_sightings"}\NormalTok{] }\OperatorTok{\textgreater{}=}\NormalTok{ HABITAT\_MIN\_SIGHTINGS)}
+                     \OperatorTok{\&}\NormalTok{ events\_all[}\StringTok{"sightings\_recovery\_ratio"}\NormalTok{].notna()}
+                     \OperatorTok{\&}\NormalTok{ (events\_all[}\StringTok{"sightings\_recovery\_ratio"}\NormalTok{] }\OperatorTok{\textgreater{}} \DecValTok{0}\NormalTok{)].copy()}
+\NormalTok{events[}\StringTok{"log\_sight\_ratio"}\NormalTok{] }\OperatorTok{=}\NormalTok{ np.log(events[}\StringTok{"sightings\_recovery\_ratio"}\NormalTok{])}
+\NormalTok{events[}\StringTok{"recovery\_gap"}\NormalTok{] }\OperatorTok{=}\NormalTok{ events[}\StringTok{"log\_ndvi\_ratio"}\NormalTok{] }\OperatorTok{{-}}\NormalTok{ events[}\StringTok{"log\_sight\_ratio"}\NormalTok{]}
+
+\BuiltInTok{print}\NormalTok{(}\SpecialStringTok{f"}\SpecialCharTok{\{}\BuiltInTok{len}\NormalTok{(events\_all)}\SpecialCharTok{\}}\SpecialStringTok{ major{-}fire events with a usable NDVI recovery ratio + heat exposure "}
+      \SpecialStringTok{f"(}\SpecialCharTok{\{}\NormalTok{events\_all[}\StringTok{\textquotesingle{}ADM2\_NAME\textquotesingle{}}\NormalTok{]}\SpecialCharTok{.}\NormalTok{nunique()}\SpecialCharTok{\}}\SpecialStringTok{ divisions, states: }\SpecialCharTok{\{}\BuiltInTok{sorted}\NormalTok{(events\_all[}\StringTok{\textquotesingle{}ADM1\_NAME\textquotesingle{}}\NormalTok{].unique())}\SpecialCharTok{\}}\SpecialStringTok{)"}\NormalTok{)}
+\BuiltInTok{print}\NormalTok{(}\SpecialStringTok{f"}\SpecialCharTok{\{}\BuiltInTok{len}\NormalTok{(events)}\SpecialCharTok{\}}\SpecialStringTok{ of those also have a valid sightings recovery ratio in a habitat division "}
+      \SpecialStringTok{f"(}\SpecialCharTok{\{}\NormalTok{events[}\StringTok{\textquotesingle{}ADM2\_NAME\textquotesingle{}}\NormalTok{]}\SpecialCharTok{.}\NormalTok{nunique()}\SpecialCharTok{\}}\SpecialStringTok{ divisions, states: }\SpecialCharTok{\{}\BuiltInTok{sorted}\NormalTok{(events[}\StringTok{\textquotesingle{}ADM1\_NAME\textquotesingle{}}\NormalTok{].unique())}\SpecialCharTok{\}}\SpecialStringTok{)"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+400 major-fire events with a usable NDVI recovery ratio + heat exposure (106 divisions, states: ['New South Wales', 'Queensland', 'South Australia', 'Tasmania', 'Western Australia'])
+53 of those also have a valid sightings recovery ratio in a habitat division (29 divisions, states: ['New South Wales', 'Queensland'])
+\end{verbatim}
+
+\texttt{events\_all} (NDVI-only) and \texttt{events} (the
+habitat/sightings-gated subset, used for every sightings-side and
+recovery-gap test below) are each built \textbf{once} here and reused
+unchanged for the rest of the report.
+
+The states actually retained in \texttt{events} above reflect a
+biogeographic fact, not a bug: these six indicator species are
+essentially south-eastern-Australia forest species and are rarely
+recorded in WA/NT/TAS/SA regardless of fire or NDVI coverage there, so
+every sightings-side and recovery-gap result below necessarily runs on
+whichever state(s) currently clear the
+\texttt{\textgreater{}=\ 200}-sightings bar (see Limitations).
+
+\section{Descriptive overview}\label{descriptive-overview}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{events[[}\StringTok{"heat\_anomaly\_postfire"}\NormalTok{, }\StringTok{"ndvi\_recovery\_ratio"}\NormalTok{, }\StringTok{"sightings\_recovery\_ratio"}\NormalTok{, }\StringTok{"recovery\_gap"}\NormalTok{]].describe()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}lllll@{}}
+\toprule\noalign{}
+& heat\_anomaly\_postfire & ndvi\_recovery\_ratio &
+sightings\_recovery\_ratio & recovery\_gap \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+count & 53.000000 & 53.000000 & 53.000000 & 53.000000 \\
+mean & 2.445986 & 4.306883 & 11.486999 & -0.072387 \\
+std & 5.239923 & 10.165986 & 26.820272 & 2.345963 \\
+min & -4.692032 & 0.079690 & 0.013924 & -3.646718 \\
+25\% & -0.037209 & 1.236241 & 0.945405 & -1.717235 \\
+50\% & 1.309639 & 2.203394 & 1.532142 & -0.102194 \\
+75\% & 2.842186 & 3.697023 & 9.180064 & 1.461929 \\
+max & 19.456584 & 74.078020 & 162.002857 & 6.031864 \\
+\end{longtable}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fig, axes }\OperatorTok{=}\NormalTok{ plt.subplots(}\DecValTok{1}\NormalTok{, }\DecValTok{3}\NormalTok{, figsize}\OperatorTok{=}\NormalTok{(}\DecValTok{15}\NormalTok{, }\DecValTok{4}\NormalTok{))}
+\NormalTok{axes[}\DecValTok{0}\NormalTok{].hist(events[}\StringTok{"heat\_anomaly\_postfire"}\NormalTok{], bins}\OperatorTok{=}\DecValTok{30}\NormalTok{, color}\OperatorTok{=}\StringTok{"steelblue"}\NormalTok{)}
+\NormalTok{axes[}\DecValTok{0}\NormalTok{].set\_title(}\StringTok{"Post{-}fire heat anomaly"}\NormalTok{)}
+\NormalTok{axes[}\DecValTok{0}\NormalTok{].set\_xlabel(}\StringTok{"Extra hot days/yr (\textgreater{}=35C) vs. division\textquotesingle{}s own baseline"}\NormalTok{)}
+
+\NormalTok{axes[}\DecValTok{1}\NormalTok{].hist(events[}\StringTok{"ndvi\_recovery\_ratio"}\NormalTok{], bins}\OperatorTok{=}\DecValTok{30}\NormalTok{, color}\OperatorTok{=}\StringTok{"seagreen"}\NormalTok{)}
+\NormalTok{axes[}\DecValTok{1}\NormalTok{].axvline(}\FloatTok{1.0}\NormalTok{, color}\OperatorTok{=}\StringTok{"grey"}\NormalTok{, ls}\OperatorTok{=}\StringTok{"{-}{-}"}\NormalTok{)}
+\NormalTok{axes[}\DecValTok{1}\NormalTok{].set\_title(}\StringTok{"Vegetation (NDVI) recovery ratio (RRI)"}\NormalTok{)}
+\NormalTok{axes[}\DecValTok{1}\NormalTok{].set\_xlabel(}\StringTok{"NDVI RRI (1.0 = fully recovered relative to the fire{-}year dip)"}\NormalTok{)}
+
+\NormalTok{axes[}\DecValTok{2}\NormalTok{].hist(events[}\StringTok{"recovery\_gap"}\NormalTok{], bins}\OperatorTok{=}\DecValTok{30}\NormalTok{, color}\OperatorTok{=}\StringTok{"firebrick"}\NormalTok{)}
+\NormalTok{axes[}\DecValTok{2}\NormalTok{].axvline(}\DecValTok{0}\NormalTok{, color}\OperatorTok{=}\StringTok{"grey"}\NormalTok{, ls}\OperatorTok{=}\StringTok{"{-}{-}"}\NormalTok{)}
+\NormalTok{axes[}\DecValTok{2}\NormalTok{].set\_title(}\StringTok{"Recovery gap distribution"}\NormalTok{)}
+\NormalTok{axes[}\DecValTok{2}\NormalTok{].set\_xlabel(}\StringTok{"log(NDVI ratio) {-} log(sightings ratio)"}\NormalTok{)}
+
+\NormalTok{fig.suptitle(}\SpecialStringTok{f"Distributions of heat exposure, vegetation recovery, and the recovery gap (}\SpecialCharTok{\{}\BuiltInTok{len}\NormalTok{(events)}\SpecialCharTok{\}}\SpecialStringTok{ major fire events)"}\NormalTok{, y}\OperatorTok{=}\FloatTok{1.04}\NormalTok{)}
+\NormalTok{plt.tight\_layout()}
+\NormalTok{plt.show()}
+\end{Highlighting}
+\end{Shaded}
+
+\pandocbounded{\includegraphics[keepaspectratio]{fire_recovery_full_report_files/figure-pdf/cell-19-output-1.png}}
+
+\section{Interactive map: where does the recovery gap show
+up?}\label{interactive-map-where-does-the-recovery-gap-show-up}
+
+Each fire-prone division's \textbf{mean recovery gap} across all its
+major-fire events. Red = vegetation recovers substantially better than
+wildlife (higher false-reassurance risk); blue = the two track each
+other. The join below matches on \textbf{both} \texttt{ADM1\_NAME} and
+\texttt{ADM2\_NAME} (not \texttt{ADM2\_NAME} alone), since some LGA
+names recur across state borders (e.g.~``Campbelltown (C)'' exists in
+both NSW and SA) and a name-only join could silently misattribute those
+divisions on the map.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{div\_agg }\OperatorTok{=}\NormalTok{ events.groupby([}\StringTok{"ADM1\_NAME"}\NormalTok{, }\StringTok{"ADM2\_NAME"}\NormalTok{]).agg(}
+\NormalTok{    n\_events}\OperatorTok{=}\NormalTok{(}\StringTok{"recovery\_gap"}\NormalTok{, }\StringTok{"size"}\NormalTok{),}
+\NormalTok{    mean\_recovery\_gap}\OperatorTok{=}\NormalTok{(}\StringTok{"recovery\_gap"}\NormalTok{, }\StringTok{"mean"}\NormalTok{),}
+\NormalTok{    mean\_heat\_anomaly}\OperatorTok{=}\NormalTok{(}\StringTok{"heat\_anomaly\_postfire"}\NormalTok{, }\StringTok{"mean"}\NormalTok{),}
+\NormalTok{    mean\_ndvi\_ratio}\OperatorTok{=}\NormalTok{(}\StringTok{"ndvi\_recovery\_ratio"}\NormalTok{, }\StringTok{"mean"}\NormalTok{),}
+\NormalTok{    mean\_sightings\_ratio}\OperatorTok{=}\NormalTok{(}\StringTok{"sightings\_recovery\_ratio"}\NormalTok{, }\StringTok{"mean"}\NormalTok{),}
+\NormalTok{).reset\_index()}
+\NormalTok{div\_agg[}\StringTok{"division\_id"}\NormalTok{] }\OperatorTok{=}\NormalTok{ div\_agg[}\StringTok{"ADM1\_NAME"}\NormalTok{] }\OperatorTok{+} \StringTok{"||"} \OperatorTok{+}\NormalTok{ div\_agg[}\StringTok{"ADM2\_NAME"}\NormalTok{]}
+
+\NormalTok{geojson }\OperatorTok{=}\NormalTok{ filter\_geojson(admin2\_geojson, div\_agg[}\StringTok{"division\_id"}\NormalTok{])}
+
+\NormalTok{div\_agg\_labelled }\OperatorTok{=}\NormalTok{ div\_agg.rename(columns}\OperatorTok{=}\NormalTok{\{}
+    \StringTok{"ADM1\_NAME"}\NormalTok{: }\StringTok{"State"}\NormalTok{, }\StringTok{"mean\_recovery\_gap"}\NormalTok{: }\StringTok{"Mean recovery gap"}\NormalTok{,}
+    \StringTok{"mean\_heat\_anomaly"}\NormalTok{: }\StringTok{"Mean post{-}fire heat anomaly (extra hot days/yr)"}\NormalTok{,}
+    \StringTok{"mean\_ndvi\_ratio"}\NormalTok{: }\StringTok{"Mean NDVI recovery ratio"}\NormalTok{, }\StringTok{"mean\_sightings\_ratio"}\NormalTok{: }\StringTok{"Mean sightings recovery ratio"}\NormalTok{,}
+    \StringTok{"n\_events"}\NormalTok{: }\StringTok{"Number of major fire events"}\NormalTok{,}
+\NormalTok{\})}
+
+\NormalTok{fig\_map }\OperatorTok{=}\NormalTok{ px.choropleth\_map(}
+\NormalTok{    div\_agg\_labelled, geojson}\OperatorTok{=}\NormalTok{geojson, locations}\OperatorTok{=}\StringTok{"division\_id"}\NormalTok{, featureidkey}\OperatorTok{=}\StringTok{"properties.division\_id"}\NormalTok{,}
+\NormalTok{    color}\OperatorTok{=}\StringTok{"Mean recovery gap"}\NormalTok{, color\_continuous\_scale}\OperatorTok{=}\StringTok{"RdBu\_r"}\NormalTok{, color\_continuous\_midpoint}\OperatorTok{=}\DecValTok{0}\NormalTok{,}
+\NormalTok{    hover\_name}\OperatorTok{=}\StringTok{"ADM2\_NAME"}\NormalTok{,}
+\NormalTok{    hover\_data}\OperatorTok{=}\NormalTok{\{}\StringTok{"State"}\NormalTok{: }\VariableTok{True}\NormalTok{, }\StringTok{"Mean recovery gap"}\NormalTok{: }\StringTok{":.2f"}\NormalTok{,}
+                \StringTok{"Mean post{-}fire heat anomaly (extra hot days/yr)"}\NormalTok{: }\StringTok{":.1f"}\NormalTok{,}
+                \StringTok{"Mean NDVI recovery ratio"}\NormalTok{: }\StringTok{":.2f"}\NormalTok{, }\StringTok{"Mean sightings recovery ratio"}\NormalTok{: }\StringTok{":.2f"}\NormalTok{,}
+                \StringTok{"Number of major fire events"}\NormalTok{: }\VariableTok{True}\NormalTok{\},}
+\NormalTok{    map\_style}\OperatorTok{=}\StringTok{"carto{-}positron"}\NormalTok{, zoom}\OperatorTok{=}\FloatTok{3.2}\NormalTok{, center}\OperatorTok{=}\NormalTok{\{}\StringTok{"lat"}\NormalTok{: }\OperatorTok{{-}}\DecValTok{28}\NormalTok{, }\StringTok{"lon"}\NormalTok{: }\DecValTok{145}\NormalTok{\}, opacity}\OperatorTok{=}\FloatTok{0.75}\NormalTok{, height}\OperatorTok{=}\DecValTok{650}\NormalTok{,}
+\NormalTok{)}
+\NormalTok{fig\_map.update\_layout(}
+\NormalTok{    title}\OperatorTok{=}\BuiltInTok{dict}\NormalTok{(text}\OperatorTok{=}\StringTok{"Mean post{-}fire recovery gap by fire{-}prone division\textless{}br\textgreater{}"}
+                     \StringTok{"\textless{}sup\textgreater{}Red = vegetation recovery exceeds wildlife recovery; Blue = the two signals track together\textless{}/sup\textgreater{}"}\NormalTok{,}
+\NormalTok{               x}\OperatorTok{=}\FloatTok{0.02}\NormalTok{, y}\OperatorTok{=}\FloatTok{0.98}\NormalTok{),}
+\NormalTok{    margin}\OperatorTok{=}\BuiltInTok{dict}\NormalTok{(l}\OperatorTok{=}\DecValTok{0}\NormalTok{, r}\OperatorTok{=}\DecValTok{0}\NormalTok{, t}\OperatorTok{=}\DecValTok{70}\NormalTok{, b}\OperatorTok{=}\DecValTok{0}\NormalTok{),}
+\NormalTok{    coloraxis\_colorbar}\OperatorTok{=}\BuiltInTok{dict}\NormalTok{(title}\OperatorTok{=}\StringTok{"Mean recovery gap\textless{}br\textgreater{}(+ = vegetation\textless{}br\textgreater{}outpaces wildlife)"}\NormalTok{),}
+\NormalTok{)}
+\NormalTok{fig\_map}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+Unable to display output for mime type(s): text/html
+\end{verbatim}
+
+\begin{verbatim}
+Unable to display output for mime type(s): text/html
+\end{verbatim}
+
+\section{Visual evidence}\label{visual-evidence}
+
+\subsection{Diverging recovery lines}\label{diverging-recovery-lines}
+
+Both recovery ratios (log scale, 0 = back to baseline) plotted against
+post-fire heat exposure, with a trend line fit to each.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fig, ax }\OperatorTok{=}\NormalTok{ plt.subplots(figsize}\OperatorTok{=}\NormalTok{(}\DecValTok{8}\NormalTok{, }\FloatTok{5.5}\NormalTok{))}
+\NormalTok{xs }\OperatorTok{=}\NormalTok{ np.linspace(events[}\StringTok{"heat\_anomaly\_postfire"}\NormalTok{].}\BuiltInTok{min}\NormalTok{(), events[}\StringTok{"heat\_anomaly\_postfire"}\NormalTok{].}\BuiltInTok{max}\NormalTok{(), }\DecValTok{50}\NormalTok{)}
+\NormalTok{z\_ndvi }\OperatorTok{=}\NormalTok{ np.polyfit(events[}\StringTok{"heat\_anomaly\_postfire"}\NormalTok{], events[}\StringTok{"log\_ndvi\_ratio"}\NormalTok{], }\DecValTok{1}\NormalTok{)}
+\NormalTok{z\_sight }\OperatorTok{=}\NormalTok{ np.polyfit(events[}\StringTok{"heat\_anomaly\_postfire"}\NormalTok{], events[}\StringTok{"log\_sight\_ratio"}\NormalTok{], }\DecValTok{1}\NormalTok{)}
+
+\NormalTok{ax.scatter(events[}\StringTok{"heat\_anomaly\_postfire"}\NormalTok{], events[}\StringTok{"log\_ndvi\_ratio"}\NormalTok{], alpha}\OperatorTok{=}\FloatTok{0.15}\NormalTok{, s}\OperatorTok{=}\DecValTok{14}\NormalTok{, color}\OperatorTok{=}\StringTok{"seagreen"}\NormalTok{)}
+\NormalTok{ax.scatter(events[}\StringTok{"heat\_anomaly\_postfire"}\NormalTok{], events[}\StringTok{"log\_sight\_ratio"}\NormalTok{], alpha}\OperatorTok{=}\FloatTok{0.15}\NormalTok{, s}\OperatorTok{=}\DecValTok{14}\NormalTok{, color}\OperatorTok{=}\StringTok{"darkorange"}\NormalTok{)}
+\NormalTok{ax.plot(xs, np.polyval(z\_ndvi, xs), color}\OperatorTok{=}\StringTok{"seagreen"}\NormalTok{, lw}\OperatorTok{=}\DecValTok{3}\NormalTok{, label}\OperatorTok{=}\StringTok{"NDVI recovery (vegetation)"}\NormalTok{)}
+\NormalTok{ax.plot(xs, np.polyval(z\_sight, xs), color}\OperatorTok{=}\StringTok{"darkorange"}\NormalTok{, lw}\OperatorTok{=}\DecValTok{3}\NormalTok{, label}\OperatorTok{=}\StringTok{"Sightings recovery (wildlife)"}\NormalTok{)}
+\NormalTok{ax.axhline(}\DecValTok{0}\NormalTok{, color}\OperatorTok{=}\StringTok{"grey"}\NormalTok{, lw}\OperatorTok{=}\FloatTok{0.7}\NormalTok{, ls}\OperatorTok{=}\StringTok{"{-}{-}"}\NormalTok{)}
+\NormalTok{ax.set\_xlabel(}\StringTok{"Post{-}fire heat anomaly: extra hot days/yr (\textgreater{}=35C) vs. division\textquotesingle{}s own baseline"}\NormalTok{)}
+\NormalTok{ax.set\_ylabel(}\StringTok{"Log recovery ratio (0 = fully recovered to pre{-}fire baseline)"}\NormalTok{)}
+\NormalTok{ax.set\_title(}\StringTok{"Vegetation vs. wildlife recovery across the post{-}fire heat range"}\NormalTok{)}
+\NormalTok{ax.legend(title}\OperatorTok{=}\StringTok{"Recovery trend line"}\NormalTok{, loc}\OperatorTok{=}\StringTok{"upper right"}\NormalTok{)}
+\NormalTok{plt.tight\_layout()}
+\NormalTok{plt.show()}
+\end{Highlighting}
+\end{Shaded}
+
+\pandocbounded{\includegraphics[keepaspectratio]{fire_recovery_full_report_files/figure-pdf/cell-21-output-1.png}}
+
+\subsection{The gap by heat tercile}\label{the-gap-by-heat-tercile}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{events[}\StringTok{"heat\_tercile"}\NormalTok{] }\OperatorTok{=}\NormalTok{ pd.qcut(events[}\StringTok{"heat\_anomaly\_postfire"}\NormalTok{], }\DecValTok{3}\NormalTok{, labels}\OperatorTok{=}\NormalTok{[}\StringTok{"Low heat"}\NormalTok{, }\StringTok{"Medium heat"}\NormalTok{, }\StringTok{"High heat"}\NormalTok{])}
+\NormalTok{tercile }\OperatorTok{=}\NormalTok{ events.groupby(}\StringTok{"heat\_tercile"}\NormalTok{, observed}\OperatorTok{=}\VariableTok{True}\NormalTok{).agg(}
+\NormalTok{    mean\_gap}\OperatorTok{=}\NormalTok{(}\StringTok{"recovery\_gap"}\NormalTok{, }\StringTok{"mean"}\NormalTok{), se\_gap}\OperatorTok{=}\NormalTok{(}\StringTok{"recovery\_gap"}\NormalTok{, }\KeywordTok{lambda}\NormalTok{ x: x.std() }\OperatorTok{/}\NormalTok{ np.sqrt(}\BuiltInTok{len}\NormalTok{(x)))}
+\NormalTok{)}
+\NormalTok{fig, ax }\OperatorTok{=}\NormalTok{ plt.subplots(figsize}\OperatorTok{=}\NormalTok{(}\FloatTok{6.5}\NormalTok{, }\DecValTok{5}\NormalTok{))}
+\NormalTok{ax.bar(tercile.index, tercile[}\StringTok{"mean\_gap"}\NormalTok{], yerr}\OperatorTok{=}\FloatTok{1.96} \OperatorTok{*}\NormalTok{ tercile[}\StringTok{"se\_gap"}\NormalTok{], capsize}\OperatorTok{=}\DecValTok{6}\NormalTok{,}
+\NormalTok{       color}\OperatorTok{=}\NormalTok{[}\StringTok{"\#4c72b0"}\NormalTok{, }\StringTok{"\#dd8452"}\NormalTok{, }\StringTok{"\#c44e52"}\NormalTok{])}
+\NormalTok{ax.axhline(}\DecValTok{0}\NormalTok{, color}\OperatorTok{=}\StringTok{"grey"}\NormalTok{, lw}\OperatorTok{=}\FloatTok{0.8}\NormalTok{)}
+\NormalTok{ax.set\_xlabel(}\StringTok{"Post{-}fire heat exposure group (equal{-}sized thirds of all events)"}\NormalTok{)}
+\NormalTok{ax.set\_ylabel(}\StringTok{"Mean recovery gap (log NDVI ratio {-} log sightings ratio), +/{-}95\% CI"}\NormalTok{)}
+\NormalTok{ax.set\_title(}\StringTok{"Mean recovery gap across post{-}fire heat exposure terciles"}\NormalTok{)}
+\NormalTok{plt.tight\_layout()}
+\NormalTok{plt.show()}
+\NormalTok{tercile}
+\end{Highlighting}
+\end{Shaded}
+
+\pandocbounded{\includegraphics[keepaspectratio]{fire_recovery_full_report_files/figure-pdf/cell-22-output-1.png}}
+
+\begin{longtable}[]{@{}lll@{}}
+\toprule\noalign{}
+& mean\_gap & se\_gap \\
+heat\_tercile & & \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Low heat & -0.536178 & 0.594045 \\
+Medium heat & -0.410984 & 0.378890 \\
+High heat & 0.711189 & 0.632145 \\
+\end{longtable}
+
+\section{Statistical testing}\label{statistical-testing}
+
+The statistical section is designed to separate visual patterns from
+evidence. It uses a rank-based test, a model-based test with clustered
+standard errors, and a bootstrap robustness check. The tests are applied
+first to vegetation and sightings recovery separately, then to the
+combined \textbf{recovery gap}. Every number below is computed live from
+the current event table rather than typed into the prose.
+
+\subsection{Assumption checks before
+testing}\label{assumption-checks-before-testing}
+
+The variables are not ideal for a single simple parametric test. Heat
+exposure is an anomaly count, fire severity spans orders of magnitude,
+and recovery ratios can be strongly skewed. For that reason, the report
+uses:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Spearman correlation} for the first pass, because it tests
+  whether higher heat tends to correspond to higher/lower recovery
+  without assuming normally distributed variables or a strictly linear
+  relationship.
+\item
+  \textbf{Log-transformed recovery ratios} for OLS, because the response
+  variables are ratios and proportional changes are easier to interpret
+  on the log scale.
+\item
+  \textbf{Cluster-robust standard errors by division}, because several
+  fire events can occur in the same division and those observations
+  should not be treated as fully independent.
+\item
+  \textbf{Cluster bootstrap by division} for the recovery-gap slope,
+  because the sightings-side sample is smaller and may be sensitive to
+  individual high-recording divisions.
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{assumption\_summary }\OperatorTok{=}\NormalTok{ pd.DataFrame(\{}
+    \StringTok{"variable"}\NormalTok{: [}\StringTok{"heat anomaly"}\NormalTok{, }\StringTok{"NDVI recovery ratio"}\NormalTok{, }\StringTok{"sightings recovery ratio"}\NormalTok{, }\StringTok{"recovery gap"}\NormalTok{, }\StringTok{"fire severity"}\NormalTok{],}
+    \StringTok{"n"}\NormalTok{: [}
+\NormalTok{        events[}\StringTok{"heat\_anomaly\_postfire"}\NormalTok{].notna().}\BuiltInTok{sum}\NormalTok{(),}
+\NormalTok{        events\_all[}\StringTok{"ndvi\_recovery\_ratio"}\NormalTok{].notna().}\BuiltInTok{sum}\NormalTok{(),}
+\NormalTok{        events[}\StringTok{"sightings\_recovery\_ratio"}\NormalTok{].notna().}\BuiltInTok{sum}\NormalTok{(),}
+\NormalTok{        events[}\StringTok{"recovery\_gap"}\NormalTok{].notna().}\BuiltInTok{sum}\NormalTok{(),}
+\NormalTok{        events\_all[}\StringTok{"max\_area\_ha"}\NormalTok{].notna().}\BuiltInTok{sum}\NormalTok{(),}
+\NormalTok{    ],}
+    \StringTok{"skewness"}\NormalTok{: [}
+\NormalTok{        stats.skew(events[}\StringTok{"heat\_anomaly\_postfire"}\NormalTok{], nan\_policy}\OperatorTok{=}\StringTok{"omit"}\NormalTok{),}
+\NormalTok{        stats.skew(events\_all[}\StringTok{"ndvi\_recovery\_ratio"}\NormalTok{], nan\_policy}\OperatorTok{=}\StringTok{"omit"}\NormalTok{),}
+\NormalTok{        stats.skew(events[}\StringTok{"sightings\_recovery\_ratio"}\NormalTok{], nan\_policy}\OperatorTok{=}\StringTok{"omit"}\NormalTok{),}
+\NormalTok{        stats.skew(events[}\StringTok{"recovery\_gap"}\NormalTok{], nan\_policy}\OperatorTok{=}\StringTok{"omit"}\NormalTok{),}
+\NormalTok{        stats.skew(events\_all[}\StringTok{"max\_area\_ha"}\NormalTok{], nan\_policy}\OperatorTok{=}\StringTok{"omit"}\NormalTok{),}
+\NormalTok{    ],}
+    \StringTok{"min"}\NormalTok{: [}
+\NormalTok{        events[}\StringTok{"heat\_anomaly\_postfire"}\NormalTok{].}\BuiltInTok{min}\NormalTok{(),}
+\NormalTok{        events\_all[}\StringTok{"ndvi\_recovery\_ratio"}\NormalTok{].}\BuiltInTok{min}\NormalTok{(),}
+\NormalTok{        events[}\StringTok{"sightings\_recovery\_ratio"}\NormalTok{].}\BuiltInTok{min}\NormalTok{(),}
+\NormalTok{        events[}\StringTok{"recovery\_gap"}\NormalTok{].}\BuiltInTok{min}\NormalTok{(),}
+\NormalTok{        events\_all[}\StringTok{"max\_area\_ha"}\NormalTok{].}\BuiltInTok{min}\NormalTok{(),}
+\NormalTok{    ],}
+    \StringTok{"max"}\NormalTok{: [}
+\NormalTok{        events[}\StringTok{"heat\_anomaly\_postfire"}\NormalTok{].}\BuiltInTok{max}\NormalTok{(),}
+\NormalTok{        events\_all[}\StringTok{"ndvi\_recovery\_ratio"}\NormalTok{].}\BuiltInTok{max}\NormalTok{(),}
+\NormalTok{        events[}\StringTok{"sightings\_recovery\_ratio"}\NormalTok{].}\BuiltInTok{max}\NormalTok{(),}
+\NormalTok{        events[}\StringTok{"recovery\_gap"}\NormalTok{].}\BuiltInTok{max}\NormalTok{(),}
+\NormalTok{        events\_all[}\StringTok{"max\_area\_ha"}\NormalTok{].}\BuiltInTok{max}\NormalTok{(),}
+\NormalTok{    ],}
+\NormalTok{\})}
+\NormalTok{assumption\_summary}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}llllll@{}}
+\toprule\noalign{}
+& variable & n & skewness & min & max \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+0 & heat anomaly & 53 & 1.417830 & -4.692032 & 1.945658e+01 \\
+1 & NDVI recovery ratio & 400 & 9.953323 & 0.010336 & 2.182464e+02 \\
+2 & sightings recovery ratio & 53 & 4.090474 & 0.013924 &
+1.620029e+02 \\
+3 & recovery gap & 53 & 0.623405 & -3.646718 & 6.031864e+00 \\
+4 & fire severity & 400 & 4.736460 & 10039.633241 & 1.889778e+06 \\
+\end{longtable}
+
+These diagnostics justify using Spearman as the headline bivariate test
+and log-space OLS as a secondary, controlled model. The tests below
+therefore do not rely on raw recovery ratios being normally distributed.
+
+\subsection{Do the individual recovery ratios respond to
+heat?}\label{do-the-individual-recovery-ratios-respond-to-heat}
+
+\textbf{Spearman rank correlation} (no linearity/distribution
+assumptions):
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{r1, p1 }\OperatorTok{=}\NormalTok{ stats.spearmanr(events\_all[}\StringTok{"heat\_anomaly\_postfire"}\NormalTok{], events\_all[}\StringTok{"ndvi\_recovery\_ratio"}\NormalTok{])}
+\NormalTok{r2, p2 }\OperatorTok{=}\NormalTok{ stats.spearmanr(events[}\StringTok{"heat\_anomaly\_postfire"}\NormalTok{], events[}\StringTok{"sightings\_recovery\_ratio"}\NormalTok{])}
+\BuiltInTok{print}\NormalTok{(}\SpecialStringTok{f"heat anomaly vs NDVI recovery ratio:       rho=}\SpecialCharTok{\{}\NormalTok{r1}\SpecialCharTok{:.3f\}}\SpecialStringTok{, p=}\SpecialCharTok{\{}\NormalTok{p1}\SpecialCharTok{:.3g\}}\SpecialStringTok{, n=}\SpecialCharTok{\{}\BuiltInTok{len}\NormalTok{(events\_all)}\SpecialCharTok{\}}\SpecialStringTok{"}\NormalTok{)}
+\BuiltInTok{print}\NormalTok{(}\SpecialStringTok{f"heat anomaly vs sightings recovery ratio:  rho=}\SpecialCharTok{\{}\NormalTok{r2}\SpecialCharTok{:.3f\}}\SpecialStringTok{, p=}\SpecialCharTok{\{}\NormalTok{p2}\SpecialCharTok{:.3g\}}\SpecialStringTok{, n=}\SpecialCharTok{\{}\BuiltInTok{len}\NormalTok{(events)}\SpecialCharTok{\}}\SpecialStringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+heat anomaly vs NDVI recovery ratio:       rho=-0.136, p=0.00644, n=400
+heat anomaly vs sightings recovery ratio:  rho=-0.295, p=0.0319, n=53
+\end{verbatim}
+
+\textbf{OLS regression with cluster-robust standard errors} (clustered
+by division, since events within the same division aren't independent):
+\texttt{log(recovery\ ratio)\ \textasciitilde{}\ heat\_anomaly\ +\ log(severity)}.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{X }\OperatorTok{=}\NormalTok{ events\_all[[}\StringTok{"heat\_anomaly\_postfire"}\NormalTok{, }\StringTok{"log\_severity"}\NormalTok{]].copy()}
+\NormalTok{X }\OperatorTok{=}\NormalTok{ (X }\OperatorTok{{-}}\NormalTok{ X.mean()) }\OperatorTok{/}\NormalTok{ X.std(ddof}\OperatorTok{=}\DecValTok{0}\NormalTok{)}
+\NormalTok{vif }\OperatorTok{=}\NormalTok{ vif\_table(X, [}\StringTok{"heat\_anomaly\_postfire"}\NormalTok{, }\StringTok{"log\_severity"}\NormalTok{])}
+\BuiltInTok{print}\NormalTok{(}\StringTok{"VIF (collinearity check):"}\NormalTok{, vif)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+VIF (collinearity check): {'heat_anomaly_postfire': np.float64(1.0223889824668446), 'log_severity': np.float64(1.0223889824668446)}
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{m1 }\OperatorTok{=}\NormalTok{ cluster\_robust\_ols(events\_all, }\StringTok{"log\_ndvi\_ratio"}\NormalTok{,}
+\NormalTok{                        [}\StringTok{"heat\_anomaly\_postfire"}\NormalTok{, }\StringTok{"log\_severity"}\NormalTok{], }\StringTok{"ADM2\_NAME"}\NormalTok{)}
+\BuiltInTok{print}\NormalTok{(m1.summary())}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+OLS with cluster-robust standard errors by division
+Outcome: log_ndvi_ratio; n=400; clusters=106; R^2=0.009
+const                    coef= 0.41395  cluster_se= 0.48466  t= 0.85  p=0.395
+heat_anomaly_postfire    coef=-0.01402  cluster_se= 0.00598  t=-2.35  p=0.02088
+log_severity             coef= 0.01235  cluster_se= 0.04651  t= 0.27  p=0.7912
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{m2 }\OperatorTok{=}\NormalTok{ cluster\_robust\_ols(events, }\StringTok{"log\_sight\_ratio"}\NormalTok{,}
+\NormalTok{                        [}\StringTok{"heat\_anomaly\_postfire"}\NormalTok{, }\StringTok{"log\_severity"}\NormalTok{], }\StringTok{"ADM2\_NAME"}\NormalTok{)}
+\BuiltInTok{print}\NormalTok{(m2.summary())}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+OLS with cluster-robust standard errors by division
+Outcome: log_sight_ratio; n=53; clusters=29; R^2=0.170
+const                    coef= 4.29928  cluster_se= 1.96430  t= 2.19  p=0.03712
+heat_anomaly_postfire    coef=-0.11086  cluster_se= 0.06987  t=-1.59  p=0.1238
+log_severity             coef=-0.30367  cluster_se= 0.20245  t=-1.50  p=0.1448
+\end{verbatim}
+
+VIF \textasciitilde1.02 for both predictors -- heat exposure and fire
+severity are not confounded with each other, so their coefficients are
+independently interpretable. \textbf{Post-fire heat anomaly is
+significant (p = 0.0209 \textless{} 0.05) for NDVI (n=400) and not
+significant (p = 0.124 \textgreater= 0.05) for sightings (n=53)} in the
+current data.
+
+A division experiencing \textbf{20 more hot days/yr than its own
+long-run average} in the recovery window after a major fire is
+associated with:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ndvi\_effect }\OperatorTok{=}\NormalTok{ np.exp(m1.params[}\StringTok{"heat\_anomaly\_postfire"}\NormalTok{] }\OperatorTok{*} \DecValTok{20}\NormalTok{)}
+\NormalTok{sight\_effect }\OperatorTok{=}\NormalTok{ np.exp(m2.params[}\StringTok{"heat\_anomaly\_postfire"}\NormalTok{] }\OperatorTok{*} \DecValTok{20}\NormalTok{)}
+\BuiltInTok{print}\NormalTok{(effect\_line(}\StringTok{"NDVI recovery ratio"}\NormalTok{, ndvi\_effect))}
+\BuiltInTok{print}\NormalTok{(effect\_line(}\StringTok{"Sightings recovery ratio"}\NormalTok{, sight\_effect))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+NDVI recovery ratio        x 0.755   (24.5% lower relative recovery)
+Sightings recovery ratio   x 0.109   (89.1% lower relative recovery)
+\end{verbatim}
+
+\subsection{Does the vegetation-vs-sightings recovery gap widen with
+heat?}\label{does-the-vegetation-vs-sightings-recovery-gap-widen-with-heat}
+
+Same two tests, applied directly to the \textbf{gap}
+(\texttt{recovery\_gap\ =\ log\_ndvi\_ratio\ -\ log\_sight\_ratio}),
+plus one robustness check on the regression slope.
+
+\textbf{Spearman rank correlation:}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{r3, p3 }\OperatorTok{=}\NormalTok{ stats.spearmanr(events[}\StringTok{"heat\_anomaly\_postfire"}\NormalTok{], events[}\StringTok{"recovery\_gap"}\NormalTok{])}
+\BuiltInTok{print}\NormalTok{(}\SpecialStringTok{f"Spearman(heat anomaly, recovery gap): rho=}\SpecialCharTok{\{}\NormalTok{r3}\SpecialCharTok{:.3f\}}\SpecialStringTok{, p=}\SpecialCharTok{\{}\NormalTok{p3}\SpecialCharTok{:.4g\}}\SpecialStringTok{, n=}\SpecialCharTok{\{}\BuiltInTok{len}\NormalTok{(events)}\SpecialCharTok{\}}\SpecialStringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+Spearman(heat anomaly, recovery gap): rho=0.282, p=0.04062, n=53
+\end{verbatim}
+
+\textbf{OLS, cluster-robust SEs, on the gap directly:}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{m3 }\OperatorTok{=}\NormalTok{ cluster\_robust\_ols(events, }\StringTok{"recovery\_gap"}\NormalTok{,}
+\NormalTok{                        [}\StringTok{"heat\_anomaly\_postfire"}\NormalTok{, }\StringTok{"log\_severity"}\NormalTok{], }\StringTok{"ADM2\_NAME"}\NormalTok{)}
+\BuiltInTok{print}\NormalTok{(m3.summary())}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+OLS with cluster-robust standard errors by division
+Outcome: recovery_gap; n=53; clusters=29; R^2=0.170
+const                    coef=-5.88093  cluster_se= 2.81127  t=-2.09  p=0.04564
+heat_anomaly_postfire    coef= 0.09959  cluster_se= 0.07685  t= 1.30  p=0.2056
+log_severity             coef= 0.53204  cluster_se= 0.28044  t= 1.90  p=0.06816
+\end{verbatim}
+
+\subsection{Model diagnostic plots}\label{model-diagnostic-plots}
+
+The residual plots below check whether the OLS results are being driven
+by obvious non-linearity or extreme residual structure. The Q-Q plots
+are included as a diagnostic rather than a strict pass/fail test: with
+cluster-robust standard errors and the bootstrap check below, exact
+normal residuals are not required for the main interpretation.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{residual\_diagnostic\_plot(}
+\NormalTok{    [m1, m2, m3],}
+\NormalTok{    [}\StringTok{"NDVI recovery model"}\NormalTok{, }\StringTok{"Sightings recovery model"}\NormalTok{, }\StringTok{"Recovery{-}gap model"}\NormalTok{],}
+\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\pandocbounded{\includegraphics[keepaspectratio]{fire_recovery_full_report_files/figure-pdf/cell-31-output-1.png}}
+
+\textbf{Cluster bootstrap on the slope} (resampling whole divisions, not
+individual events, 2,000 times -- checks the regression result isn't an
+artefact of one or two divisions with unusually many events):
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{rng }\OperatorTok{=}\NormalTok{ np.random.default\_rng(}\DecValTok{42}\NormalTok{)}
+\NormalTok{divs }\OperatorTok{=}\NormalTok{ events[}\StringTok{"ADM2\_NAME"}\NormalTok{].unique()}
+\NormalTok{boot\_slopes }\OperatorTok{=}\NormalTok{ []}
+\ControlFlowTok{for}\NormalTok{ \_ }\KeywordTok{in} \BuiltInTok{range}\NormalTok{(}\DecValTok{2000}\NormalTok{):}
+\NormalTok{    sample\_divs }\OperatorTok{=}\NormalTok{ rng.choice(divs, size}\OperatorTok{=}\BuiltInTok{len}\NormalTok{(divs), replace}\OperatorTok{=}\VariableTok{True}\NormalTok{)}
+\NormalTok{    boot\_df }\OperatorTok{=}\NormalTok{ pd.concat([events[events.ADM2\_NAME }\OperatorTok{==}\NormalTok{ d] }\ControlFlowTok{for}\NormalTok{ d }\KeywordTok{in}\NormalTok{ sample\_divs], ignore\_index}\OperatorTok{=}\VariableTok{True}\NormalTok{)}
+\NormalTok{    boot\_slopes.append(np.polyfit(boot\_df[}\StringTok{"heat\_anomaly\_postfire"}\NormalTok{], boot\_df[}\StringTok{"recovery\_gap"}\NormalTok{], }\DecValTok{1}\NormalTok{)[}\DecValTok{0}\NormalTok{])}
+\NormalTok{boot\_slopes }\OperatorTok{=}\NormalTok{ np.array(boot\_slopes)}
+\NormalTok{ci\_lo, ci\_hi }\OperatorTok{=}\NormalTok{ np.percentile(boot\_slopes, [}\FloatTok{2.5}\NormalTok{, }\FloatTok{97.5}\NormalTok{])}
+\NormalTok{boot\_pos\_pct }\OperatorTok{=}\NormalTok{ (boot\_slopes }\OperatorTok{\textgreater{}} \DecValTok{0}\NormalTok{).mean() }\OperatorTok{*} \DecValTok{100}
+\BuiltInTok{print}\NormalTok{(}\SpecialStringTok{f"bootstrap slope: mean=}\SpecialCharTok{\{}\NormalTok{boot\_slopes}\SpecialCharTok{.}\NormalTok{mean()}\SpecialCharTok{:.4f\}}\SpecialStringTok{, 95\% CI=[}\SpecialCharTok{\{}\NormalTok{ci\_lo}\SpecialCharTok{:.4f\}}\SpecialStringTok{, }\SpecialCharTok{\{}\NormalTok{ci\_hi}\SpecialCharTok{:.4f\}}\SpecialStringTok{]"}\NormalTok{)}
+\BuiltInTok{print}\NormalTok{(}\SpecialStringTok{f"fraction of 2,000 resamples with a positive slope: }\SpecialCharTok{\{}\NormalTok{boot\_pos\_pct}\SpecialCharTok{:.1f\}}\SpecialStringTok{\%"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+bootstrap slope: mean=0.1416, 95% CI=[-0.0548, 0.3531]
+fraction of 2,000 resamples with a positive slope: 90.6%
+\end{verbatim}
+
+\textbf{In the current data, the gap is significant (p = 0.0406
+\textless{} 0.05) on the Spearman test and not significant (p = 0.206
+\textgreater= 0.05) on the cluster-robust regression, with 91\% of
+bootstrap resamples agreeing on a positive slope.} This is best read as
+suggestive rather than definitive evidence. The rank test and bootstrap
+direction support the idea that heat may widen the
+vegetation-vs-wildlife recovery gap, but the cluster-robust model does
+not clear the conventional 0.05 threshold, so the report avoids making a
+causal or settled national claim.
+
+\textbf{Assumption note:} Spearman and the cluster bootstrap make
+essentially no distributional assumptions and are the more robust
+readings here; the OLS models add linearity-in-log-space (a standard,
+defensible choice for ratio data) and rely on cluster-robust standard
+errors, which need more independent divisions than the sightings-side
+sample currently has (VIF confirms no multicollinearity, so that part of
+the model is not the concern). Treat the NDVI-heat relationship as the
+strongest statistical result, and the gap result as an important but
+less certain stress-test signal.
+
+\section{Limitations}\label{limitations}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Correlational, not causal.} Heat, fire severity, drought, and
+  remoteness are entangled; this cannot rule out a third factor (e.g.
+  drought, which drives both worse fire years and low NDVI) acting on
+  both sides at once.
+\item
+  \textbf{Sightings are presence-only and effort-biased.} Reporting
+  effort has grown enormously nation-wide since the 1990s; the
+  share-of-year-total normalisation and the
+  \texttt{\textgreater{}=\ 200}-sightings habitat filter reduce but do
+  not eliminate this. Treat the sightings result as ``recorded
+  presence'', not population size.
+\item
+  \textbf{The sightings-side and recovery-gap tests currently run on
+  whichever state(s) clear the \texttt{\textgreater{}=\ 200}-sightings
+  habitat filter} -- printed live above. The six indicator species are
+  essentially south-eastern- Australia forest species and are almost
+  never recorded in WA/NT/TAS/SA regardless of how much fire/NDVI data
+  exists there, so this is a biogeographic fact rather than a processing
+  bug -- but it does mean the sightings-side and recovery-gap
+  conclusions cannot be read as claims about Australian wildlife
+  broadly, only about the state(s) where these particular species occur
+  in numbers.
+\item
+  \textbf{The 10,000 ha ``major fire'' threshold, and the
+  \texttt{MIN\_FIRE\_COUNT} / \texttt{MIN\_AVG\_AREA\_HA}
+  fire-prone-division thresholds, are design choices}, not physical
+  constants. Victoria's \textasciitilde440k small recorded burns (median
+  \textasciitilde11 ha) currently fail the average-area threshold and
+  drop out of the fire-prone list entirely; lowering
+  \texttt{MIN\_AVG\_AREA\_HA} would bring it back in.
+\item
+  \textbf{The recovery ratio is an adapted RRI, not the original Frazier
+  et al.~(2018) formula.} Their method locates the disturbance trough
+  precisely from per-pixel LandTrendr segmentation of Landsat and uses a
+  fixed Y+4/Y+5 recovery window; here the ``fire-year'' value is the
+  annual division-wide composite for that calendar year (a noisier proxy
+  for the true trough), and the recovery window is the best available of
+  Y+3/Y+4/Y+5 rather than fixed Y+4/Y+5, to keep 2019-onward fires
+  (including Black Summer) inside the NDVI data's 2022 cutoff.
+\item
+  \textbf{The RRI's disturbance-magnitude requirement (a measurable dip
+  in the fire year) sharply cuts the usable sample}, especially for
+  sightings -- see the live counts printed above (\texttt{events\_all}
+  vs \texttt{events}). This is the main reason the direct NDVI-heat and
+  sightings-heat relationships can trade places in significance as more
+  data/states are added, and why the gap-focused tests carry meaningful
+  sampling uncertainty.
+\item
+  \textbf{The heat-exposure window (\texttt{fire\_year} to
+  \texttt{fire\_year+3}) does not exactly match the recovery-ratio
+  window} (best available of Y+3/Y+4/Y+5). This keeps the original
+  result unchanged and captures early post-fire heat stress, but it
+  should be described as an adapted design choice rather than a
+  published formula copied verbatim from the literature.
+\item
+  \textbf{Multiple major fires can overlap} within a division's
+  post-fire window (a second fire before the recovery year used); this
+  event table does not exclude that case -- it measures recovery as
+  observed, whatever happened in between.
+\item
+  \textbf{Fire-to-division spatial join uses fire-polygon centroids},
+  and the Northern Territory layer's border-adjacent records are not
+  deduplicated against the QLD/WA/SA loaders' own records -- a small
+  double-counting risk near state borders that this report flags rather
+  than resolves.
+\end{itemize}
+
+\section{Answering the research
+question}\label{answering-the-research-question}
+
+\begin{tcolorbox}[enhanced jigsaw, left=2mm, opacityback=0, colback=white, breakable, arc=.35mm, bottomrule=.15mm, rightrule=.15mm, toprule=.15mm, colframe=quarto-callout-important-color-frame, leftrule=.75mm]
+\begin{minipage}[t]{5.5mm}
+\textcolor{quarto-callout-important-color}{\faExclamation}
+\end{minipage}%
+\begin{minipage}[t]{\textwidth - 5.5mm}
+
+\vspace{-3mm}\textbf{Main judgement}\vspace{3mm}
+
+Australia should not be judged as ``doing well'' from satellite
+greenness alone. The analysis shows that hotter early post-fire periods
+are linked to weaker vegetation recovery, while the wildlife evidence is
+too limited to confidently confirm that animals recover alongside
+vegetation.
+
+\end{minipage}%
+\end{tcolorbox}
+
+The answer is mixed, but informative. The data do not support a simple
+``Australia is doing well'' story if recovery is judged only by
+vegetation greenness. At the same time, the wildlife evidence is not yet
+strong enough to claim a definitive national recovery gap. The value of
+the analysis is that it shows where the apparent recovery signal is
+strong, where it is fragile, and where better monitoring data are
+needed.
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Clear finding:} hotter-than-normal early post-fire periods are
+  associated with weaker NDVI recovery after major fires (significant (p
+  = 0.0209 \textless{} 0.05) in the cluster-robust model, n=400). So
+  ``green again'' is not guaranteed under hotter post-fire conditions.
+\item
+  \textbf{Wildlife signal:} sightings-share recovery points in the same
+  negative direction in the simple rank test, but the model-based result
+  is not significant (p = 0.124 \textgreater= 0.05) (n=53). This means
+  the wildlife evidence should be treated as indicative rather than
+  conclusive.
+\item
+  \textbf{Gap signal:} the vegetation-vs-wildlife gap is significant (p
+  = 0.0406 \textless{} 0.05) on the Spearman test and not significant (p
+  = 0.206 \textgreater= 0.05) in the cluster-robust model. This suggests
+  a possible blind spot, but the uncertainty is still too large for a
+  definitive causal claim.
+\end{itemize}
+
+The report's contribution is a testable monitoring framework: combine
+fire history, post-fire heat, NDVI recovery, and species sightings
+before deciding whether a burnt landscape has genuinely recovered.
+
+\section{Appendix A: feature
+definitions}\label{appendix-a-feature-definitions}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Term
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Definition
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Fire-prone division} & An admin-2 (LGA) division passing both
+\texttt{fire\_count\ \textgreater{}=\ MIN\_FIRE\_COUNT} and
+\texttt{avg\_area\_ha\_per\_fire\ \textgreater{}=\ MIN\_AVG\_AREA\_HA}
+-- frequent \emph{and} individually significant fire activity, not just
+lots of small planned burns. \\
+\textbf{Major fire event} & A division-year with at least one recorded
+fire \texttt{\textgreater{}=\ 10,000\ ha} -- separates landscape-scale
+wildfires from routine hazard-reduction burns. \\
+\textbf{Pre-fire baseline} & The mean of the two years immediately
+before the fire year (Y-1, Y-2), computed separately for NDVI and for
+sightings share. \\
+\textbf{Fire-year value (Y0)} & The NDVI/sightings-share value in the
+fire year itself -- stands in for the ``disturbance trough'' that
+Frazier et al.~(2018) locate precisely from per-pixel LandTrendr
+segmentation; here it is the annual division-wide composite for that
+calendar year, a noisier proxy for the same idea. \\
+\textbf{Post-fire recovery window} & The best available value among Y+3,
+Y+4, Y+5 -- adapted from the paper's fixed Y+4/Y+5 window so fires from
+2019 onward (including Black Summer) are not dropped by the NDVI data's
+2022 cutoff. \\
+\textbf{NDVI/sightings recovery ratio (RRI)} &
+\texttt{RRI\ =\ (max(value\ over\ the\ recovery\ window)\ -\ value(Y0))\ /\ (mean(value(Y-1),\ value(Y-2))\ -\ value(Y0))}.
+\textasciitilde1.0 = recovered back to the pre-fire baseline relative to
+how hard the fire year was hit; below 1 = still short of that; above 1 =
+overshot it. Only defined when the disturbance magnitude is positive. \\
+\textbf{Sightings share} & A division's sightings in a given year,
+divided by total sightings across all fire-prone divisions that year --
+a partial correction for the nationwide growth in citizen-science
+reporting effort over time. \\
+\textbf{Heat anomaly (post-fire)} &
+\texttt{mean(hot\ days\ \textgreater{}=35C\ from\ Y\ to\ Y+3)\ -\ that\ division\textquotesingle{}s\ available-data\ mean\ annual\ hot-day\ count}
+-- measured relative to each division's own baseline, so it captures
+``unusually hot for this place'' rather than just ``a hot place.'' \\
+\textbf{Recovery gap} &
+\texttt{log(NDVI\ recovery\ ratio)\ -\ log(sightings\ recovery\ ratio)}.
+Zero = vegetation and wildlife recovered by the same proportional
+amount; positive = vegetation recovered relatively better than
+wildlife. \\
+\textbf{Fire severity (\texttt{log\_severity})} &
+\texttt{log(maximum\ single\ fire\ area\ in\ hectares\ recorded\ in\ that\ division-year)}
+-- log-transformed because fire size spans several orders of magnitude;
+a regression control variable. \\
+\textbf{Habitat division filter} & Only divisions with
+\texttt{\textgreater{}=\ 200} total sightings across the whole record
+are included in sightings-based tests, to exclude LGAs where these
+species barely occur and the sightings ratio would just be noise. \\
+\textbf{Heat tercile} & Events split into three equal-sized groups
+(Low/Medium/High) by post-fire heat anomaly, used for the tercile chart
+above. \\
+\end{longtable}
+
+\section{References}\label{references}
+
+Frazier, R. J., Coops, N. C., Wulder, M. A., Hermosilla, T., \& White,
+J. C. (2018). Analyzing spatial and temporal variability in short-term
+rates of post-fire vegetation return from Landsat time series.
+\emph{Remote Sensing of Environment, 205}, 32-45.
+https://doi.org/10.1016/j.rse.2017.11.007
+
+Sillmann, J., Kharin, V. V., Zhang, X., Zwiers, F. W., \& Bronaugh, D.
+R. (2013). Climate extremes indices in the CMIP5 multimodel ensemble:
+Part 1. Model evaluation in the present climate. \emph{Journal of
+Geophysical Research: Atmospheres, 118}(4), 1716-1733.
+https://doi.org/10.1002/jgrd.50203
+
+World Meteorological Organization. (2017). \emph{WMO Guidelines on the
+Calculation of Climate Normals} (WMO-No.~1203).
+https://library.wmo.int/idurl/4/55797
+
+
+
+
+\end{document}

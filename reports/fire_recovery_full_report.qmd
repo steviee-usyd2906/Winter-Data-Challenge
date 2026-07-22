@@ -7,12 +7,6 @@ author:
   - name: "Cong Thanh Vu (SID:530784058)"
 date: today
 format:
-  pdf:
-    number-sections: true
-    fig-align: center
-    fig-cap-location: bottom
-    fig-width: 8
-    fig-height: 5
   html:
     toc: true
     toc-depth: 3
@@ -152,6 +146,16 @@ mean habitat function or animal presence has recovered. The analysis
 therefore compares three signals for the same places and fire years:
 fire disturbance, vegetation recovery, and wildlife sightings, then asks
 whether unusually hot post-fire conditions make those signals diverge.
+The question matters because national assessments describe many of
+Australia's threatened species and ecological communities as poor and
+deteriorating ([Australian State of the Environment,
+2021](https://soe.dcceew.gov.au/overview/environment/biodiversity)), while
+a national review documents multiple interacting threats to imperilled
+species ([Kearney et al., 2019](https://doi.org/10.1071/PC18024)).
+Post-fire studies further show that severe or frequent fire can delay or
+weaken biodiversity recovery ([Gorta et al.,
+2023](https://doi.org/10.1111/gcb.16955); [Driscoll et al.,
+2024](https://doi.org/10.1038/s41586-024-08174-6)).
 
 The analysis unit is the **individual major fire event**: one
 administrative division in one fire year with at least one recorded fire
@@ -200,11 +204,16 @@ dataset.
 
 | Dataset | Role | Source |
 |----|----|----|
-| Fire history shapefiles, 7 states/territories | disturbance events: location, date, area | NSW (NPWS), QLD (QPWS), VIC (DEECA), SA, TAS, WA (DBCA), NT |
-| `FAO/GAUL/2015/level2` admin-2 boundaries | LGA-level division geometries | Google Earth Engine |
-| `AusENDVI-clim_MCD43A4...nc` | vegetation recovery signal (NDVI), 1982-2022 | Gap-filled MODIS NDVI climatology |
-| ERA5-Land daily max temperature | post-fire heat exposure, relative to each division's own baseline | Google Earth Engine (`ECMWF/ERA5_LAND/DAILY_AGGR`), 1982-2022 |
-| Koala / greater glider / yellow-bellied glider / yellow-tailed black-cockatoo / powerful owl / little lorikeet occurrences | wildlife presence (6 canopy/hollow-dependent indicator species) | Atlas of Living Australia (`galah`), 1990-2026, all 7 states/territories |
+| Fire history shapefiles, 7 jurisdictions | disturbance events: location, date, area | [NSW](https://datasets.seed.nsw.gov.au/dataset/fire-history-wildfires-and-prescribed-burns-1e8b6); [QLD](https://www.data.qld.gov.au/dataset/fire-history-queensland-parks-and-wildlife-service/resource/d132ff1e-db3d-4de1-a848-6bf3c812cd1c); [VIC cumulative history](https://discover.data.vic.gov.au/dataset/fire-history-records-of-fires-across-victoria); [SA](https://data.sa.gov.au/data/dataset/fire-history); [TAS](https://listdata.thelist.tas.gov.au/opendata/); [WA](https://catalogue.data.wa.gov.au/dataset/dbca-fire-history); [NT](https://data.nt.gov.au/dataset/nt-fire-history) |
+| `FAO/GAUL/2015/level2` admin-2 boundaries | common division geometries | [FAO GAUL via Google Earth Engine](https://developers.google.com/earth-engine/datasets/catalog/FAO_GAUL_2015_level2) |
+| `AusENDVI-clim_MCD43A4...nc` | vegetation recovery signal (NDVI), 1982-2022 | [AusENDVI v0.1.0](https://doi.org/10.5281/zenodo.10802704) |
+| ERA5-Land daily maximum temperature | post-fire heat exposure relative to each division's baseline | [ECMWF/Copernicus ERA5-Land via Earth Engine](https://developers.google.com/earth-engine/datasets/catalog/ECMWF_ERA5_LAND_DAILY_AGGR), 1982-2022 |
+| Six forest-associated indicator-species occurrences | wildlife recorded-presence signal | [Atlas of Living Australia](https://www.ala.org.au/) (`galah`), 1990-2026, across the 7 included jurisdictions |
+
+The current pipeline covers seven jurisdictions; the Australian Capital
+Territory is not included. The jurisdictional fire products also differ
+in purpose, coverage, and completeness, so harmonising their fields does
+not make their observation processes identical.
 
 # Setup
 
@@ -368,6 +377,15 @@ attribute (border-adjacent fires are sometimes attributed to
 neighbouring QLD/WA/SA), so that attribute is used directly rather than
 hardcoding "Northern Territory" for every row.
 
+The official source links are listed in the summary table above. These
+layers are not equivalent censuses: WA explicitly warns that DBCA-060 is
+not a complete statewide history. The correct Victorian source for
+repeated-fire analysis is the cumulative `FIRE_HISTORY` product, but the
+current local file and loader below still use
+`FIRE_HISTORY_LASTBURNT`, a derived overlay of the most recent recorded
+burn at each location. It must be replaced before Victorian repeated-fire
+results are interpreted.
+
 ```{python}
 #| eval: false
 #| code-summary: "Appendix: loading & standardising the 7 state/territory fire-history layers"
@@ -474,10 +492,10 @@ print(f"{len(admin2)} admin-2 divisions loaded, covering: {sorted(admin2['ADM1_N
 Fires are spatially joined to divisions on the fire polygon's
 **centroid** (fast point-in-polygon; fine here since only "which
 division is this fire mostly in" is needed, not exact boundary
-overlap). Fire count alone favours Victoria, which has ~440k small
-recorded burns (median ~11 ha) spread over few divisions, versus
-NSW/QLD's far fewer but much larger fires. Requiring **both** a minimum
-fire count *and* a minimum average area per fire targets divisions with
+overlap). The current Victorian `LASTBURNT` layer has ~440k small overlay
+polygons (median ~11 ha), not ~440k distinct fires, so its row count is
+not comparable with event-oriented NSW/QLD records. Requiring **both** a
+minimum fire-record count *and* a minimum average polygon area targets divisions with
 frequent, *significant* fire activity, not just lots of small planned
 burns.
 
@@ -518,8 +536,9 @@ print(fire_prone.groupby("ADM1_NAME").size().sort_values(ascending=False))
 ```
 
 Requiring both a high fire count *and* large average fire size currently
-skews the list toward NSW/QLD/WA -- Victoria's fires are individually
-small (median ~11 ha), so it drops out entirely at these thresholds;
+skews the list toward NSW/QLD/WA -- Victoria's current `LASTBURNT`
+polygons are individually small (median ~11 ha), so it drops out entirely
+at these thresholds;
 lowering `MIN_AVG_AREA_HA` would bring it back in.
 
 ## Major fire events
@@ -529,7 +548,13 @@ wildfires, and at LGA scale almost every fire-prone division has at
 least one fire recorded in almost every year -- so a naive fire count
 gives virtually no fire-free baseline to compare against. Fires
 `>= 10,000 ha` are treated as a "major" (landscape-scale) fire,
-separating real wildfires from routine hazard-reduction blocks.
+separating very large events from routine hazard-reduction blocks. This
+is a literature-informed design choice, not a physical boundary: a
+structured review found 10,000 ha was the most common size threshold used
+for a megafire and recommended `>10,000 ha` as a standard definition
+([Linley et al., 2022](https://doi.org/10.1111/geb.13499)). The analysis
+uses `>=10,000 ha` as an inclusive boundary because source areas have
+finite precision.
 
 ```{python}
 #| eval: false
@@ -598,11 +623,22 @@ print(f"NDVI table: {ndvi.shape[0]} divisions x {ndvi.shape[1]} years ({ndvi.col
 The heat data are downloaded from **Google Earth Engine**, using the
 ERA5-Land daily aggregate product (`ECMWF/ERA5_LAND/DAILY_AGGR`) and
 the `temperature_2m_max` band. For each year from 1982 to 2022, the
-pipeline counts days where daily maximum temperature reaches at least
-35C (`hot_days_ge35`) and 40C (`hot_days_ge40`), then averages those
+pipeline counts days where daily maximum temperature is strictly greater
+than 35C (`hot_days_ge35`) and 40C (`hot_days_ge40`), then averages those
 counts over each fire-prone division. This gives a gridded,
 division-level heat-exposure measure that is spatially consistent with
 the LGA-level fire and recovery analysis.
+
+The `>35C` cut-off follows the Bureau of Meteorology's Australian
+climate-extremes definition of a "hot day" ([Bureau of Meteorology,
+Climate Extremes](https://www.bom.gov.au/climate/change/about/extremes.shtml)).
+The legacy column names say `ge35`/`ge40`, but the Earth Engine code uses
+`.gt()`, so the implemented comparisons are strict `>` thresholds.
+ACORN-SAT was considered as the nationally homogenised station dataset,
+but its 112 point locations would require an extra interpolation model
+to estimate division-wide exposure; the gridded ERA5-Land product was
+therefore used instead ([Bureau of Meteorology,
+ACORN-SAT](https://www.bom.gov.au/climate/data/acorn-sat/)).
 
 The Earth Engine extraction is shown below for transparency but is not
 run during report rendering. The rendered report instead reads the
@@ -662,13 +698,23 @@ print(f"Heat anomaly baseline: {min(HEAT_BASELINE_YEARS)}-{max(HEAT_BASELINE_YEA
 Six canopy/hollow-dependent species -- koala, greater glider,
 yellow-bellied glider, yellow-tailed black-cockatoo, powerful owl, and
 little lorikeet -- are pulled from the Atlas of Living Australia via
-`galah`, across all 7 states/territories, 1990-2026. Citizen-science
+`galah`, across the 7 included jurisdictions, 1990-2026. They form a
+forest-associated indicator group, not a measure of total animal
+biodiversity. The selection is relevant to fire because hollows and
+other mature-forest structures are slow-forming resources influenced by
+time since fire and inter-fire interval ([Haslem et al.,
+2012](https://doi.org/10.1016/j.biocon.2012.04.007)). Citizen-science
 reporting effort has grown enormously nation-wide since the 1990s (more
 observers, apps like iNaturalist), so each division's sightings are
 later expressed as a **share of that year's total sightings across all
 fire-prone divisions** -- a division whose wildlife is genuinely
 declining relative to everywhere else should lose share over time even
 while the nationwide raw count keeps climbing.
+
+Direct ALA API queries do not automatically mint a dataset DOI. For the
+final submission, the exact occurrence table should be archived and, if
+possible, downloaded through ALA's DOI-enabled workflow so the wildlife
+input has a stable, independently reproducible citation.
 
 ```{python}
 #| eval: false
@@ -856,7 +902,7 @@ events[["heat_anomaly_postfire", "ndvi_recovery_ratio", "sightings_recovery_rati
 fig, axes = plt.subplots(1, 3, figsize=(15, 4))
 axes[0].hist(events["heat_anomaly_postfire"], bins=30, color="steelblue")
 axes[0].set_title("Post-fire heat anomaly")
-axes[0].set_xlabel("Extra hot days/yr (>=35C) vs. division's own baseline")
+axes[0].set_xlabel("Extra hot days/yr (>35C) vs. division's own baseline")
 
 axes[1].hist(events["ndvi_recovery_ratio"], bins=30, color="seagreen")
 axes[1].axvline(1.0, color="grey", ls="--")
@@ -910,7 +956,9 @@ fig_map = px.choropleth_map(
                 "Mean post-fire heat anomaly (extra hot days/yr)": ":.1f",
                 "Mean NDVI recovery ratio": ":.2f", "Mean sightings recovery ratio": ":.2f",
                 "Number of major fire events": True},
-    map_style="carto-positron", zoom=3.2, center={"lat": -28, "lon": 145}, opacity=0.75, height=650,
+    # An offline background keeps the map visible when this self-contained
+    # report is opened without access to external map-tile servers.
+    map_style="white-bg", zoom=3.2, center={"lat": -28, "lon": 145}, opacity=0.75, height=650,
 )
 fig_map.update_layout(
     title=dict(text="Mean post-fire recovery gap by fire-prone division<br>"
@@ -919,7 +967,11 @@ fig_map.update_layout(
     margin=dict(l=0, r=0, t=70, b=0),
     coloraxis_colorbar=dict(title="Mean recovery gap<br>(+ = vegetation<br>outpaces wildlife)"),
 )
-fig_map
+# Embed Plotly directly in the report. Quarto's default Jupyter renderer can
+# otherwise leave a CDN import in the HTML, causing a blank map when opened
+# locally or where external scripts are blocked.
+from IPython.display import HTML, display
+display(HTML(fig_map.to_html(full_html=False, include_plotlyjs=True)))
 ```
 
 # Visual evidence
@@ -940,7 +992,7 @@ ax.scatter(events["heat_anomaly_postfire"], events["log_sight_ratio"], alpha=0.1
 ax.plot(xs, np.polyval(z_ndvi, xs), color="seagreen", lw=3, label="NDVI recovery (vegetation)")
 ax.plot(xs, np.polyval(z_sight, xs), color="darkorange", lw=3, label="Sightings recovery (wildlife)")
 ax.axhline(0, color="grey", lw=0.7, ls="--")
-ax.set_xlabel("Post-fire heat anomaly: extra hot days/yr (>=35C) vs. division's own baseline")
+ax.set_xlabel("Post-fire heat anomaly: extra hot days/yr (>35C) vs. division's own baseline")
 ax.set_ylabel("Log recovery ratio (0 = fully recovered to pre-fire baseline)")
 ax.set_title("Vegetation vs. wildlife recovery across the post-fire heat range")
 ax.legend(title="Recovery trend line", loc="upper right")
@@ -1190,10 +1242,22 @@ gap_model_sig = sig(m3.pvalues["heat_anomaly_postfire"])
   the sightings-side and recovery-gap conclusions cannot be read as
   claims about Australian wildlife broadly, only about the state(s)
   where these particular species occur in numbers.
+- **The geographic pipeline covers seven jurisdictions, not every
+  Australian jurisdiction.** The Australian Capital Territory is absent,
+  so "Australia" denotes the national research question rather than
+  complete territorial coverage.
+- **Jurisdictional fire histories are not directly equivalent.** Their
+  temporal coverage, treatment of prescribed burns, and spatial
+  completeness differ. WA states that DBCA-060 is not a complete
+  statewide history. The current Victorian `LASTBURNT` input is a derived
+  overlay rather than the cumulative fire history; its ~440k rows are
+  spatial polygons, not distinct fire events. This limits cross-state
+  fire-count comparisons and repeated-fire inference.
 - **The 10,000 ha "major fire" threshold, and the `MIN_FIRE_COUNT` /
   `MIN_AVG_AREA_HA` fire-prone-division thresholds, are design
-  choices**, not physical constants. Victoria's ~440k small recorded
-  burns (median ~11 ha) currently fail the average-area threshold and
+  choices**, not physical constants. Victoria's ~440k `LASTBURNT`
+  polygon records (median polygon area ~11 ha) currently fail the
+  average-area threshold and
   drop out of the fire-prone list entirely; lowering `MIN_AVG_AREA_HA`
   would bring it back in.
 - **The recovery ratio is an adapted RRI, not the original Frazier et
@@ -1275,7 +1339,7 @@ before deciding whether a burnt landscape has genuinely recovered.
 | **Post-fire recovery window** | The best available value among Y+3, Y+4, Y+5 -- adapted from the paper's fixed Y+4/Y+5 window so fires from 2019 onward (including Black Summer) are not dropped by the NDVI data's 2022 cutoff. |
 | **NDVI/sightings recovery ratio (RRI)** | `RRI = (max(value over the recovery window) - value(Y0)) / (mean(value(Y-1), value(Y-2)) - value(Y0))`. ~1.0 = recovered back to the pre-fire baseline relative to how hard the fire year was hit; below 1 = still short of that; above 1 = overshot it. Only defined when the disturbance magnitude is positive. |
 | **Sightings share** | A division's sightings in a given year, divided by total sightings across all fire-prone divisions that year -- a partial correction for the nationwide growth in citizen-science reporting effort over time. |
-| **Heat anomaly (post-fire)** | `mean(hot days >=35C from Y to Y+3) - that division's available-data mean annual hot-day count` -- measured relative to each division's own baseline, so it captures "unusually hot for this place" rather than just "a hot place." |
+| **Heat anomaly (post-fire)** | `mean(hot days >35C from Y to Y+3) - that division's available-data mean annual hot-day count` -- measured relative to each division's own baseline, so it captures "unusually hot for this place" rather than just "a hot place." The legacy column is named `hot_days_ge35`, but the calculation uses `.gt()`. |
 | **Recovery gap** | `log(NDVI recovery ratio) - log(sightings recovery ratio)`. Zero = vegetation and wildlife recovered by the same proportional amount; positive = vegetation recovered relatively better than wildlife. |
 | **Fire severity (`log_severity`)** | `log(maximum single fire area in hectares recorded in that division-year)` -- log-transformed because fire size spans several orders of magnitude; a regression control variable. |
 | **Habitat division filter** | Only divisions with `>= 200` total sightings across the whole record are included in sightings-based tests, to exclude LGAs where these species barely occur and the sightings ratio would just be noise. |
@@ -1283,18 +1347,124 @@ before deciding whether a burnt landscape has genuinely recovered.
 
 # References
 
+## Research motivation and methodological justification
+
+Australian Government Department of Climate Change, Energy, the
+Environment and Water. (2021). *Australia State of the Environment 2021:
+Biodiversity*.
+[https://soe.dcceew.gov.au/overview/environment/biodiversity](https://soe.dcceew.gov.au/overview/environment/biodiversity)
+
+Bureau of Meteorology. (n.d.). *About the Australian climate extremes
+analyses*. Accessed 22 July 2026.
+[https://www.bom.gov.au/climate/change/about/extremes.shtml](https://www.bom.gov.au/climate/change/about/extremes.shtml)
+
+Driscoll, D. A., Macdonald, K. J., Gibson, R. K., et al. (2024).
+Biodiversity impacts of the 2019-2020 Australian megafires. *Nature, 635*,
+898-905.
+[https://doi.org/10.1038/s41586-024-08174-6](https://doi.org/10.1038/s41586-024-08174-6)
+
 Frazier, R. J., Coops, N. C., Wulder, M. A., Hermosilla, T., & White, J.
 C. (2018). Analyzing spatial and temporal variability in short-term
 rates of post-fire vegetation return from Landsat time series. *Remote
 Sensing of Environment, 205*, 32-45.
-https://doi.org/10.1016/j.rse.2017.11.007
+[https://doi.org/10.1016/j.rse.2017.11.007](https://doi.org/10.1016/j.rse.2017.11.007)
+
+Gorta, S. B. Z., Callaghan, C. T., Samonte, F., Ooi, M. K. J., Mesaglio,
+T., Laffan, S. W., & Cornwell, W. K. (2023). Multi-taxon biodiversity
+responses to the 2019-2020 Australian megafires. *Global Change Biology,
+29*(23), 6727-6740.
+[https://doi.org/10.1111/gcb.16955](https://doi.org/10.1111/gcb.16955)
+
+Haslem, A., Avitabile, S. C., Taylor, R. S., Kelly, L. T., Watson, S. J.,
+Nimmo, D. G., Kenny, S. A., Callister, K. E., Spence-Bailey, L. M.,
+Bennett, A. F., & Clarke, M. F. (2012). Time-since-fire and inter-fire
+interval influence hollow availability for fauna in a fire-prone system.
+*Biological Conservation, 152*, 212-221.
+[https://doi.org/10.1016/j.biocon.2012.04.007](https://doi.org/10.1016/j.biocon.2012.04.007)
+
+Kearney, S. G., Carwardine, J., Reside, A. E., Fisher, D. O., Maron, M.,
+Doherty, T. S., Legge, S., Silcock, J., Woinarski, J. C. Z., Garnett, S.
+T., Wintle, B. A., & Watson, J. E. M. (2019). The threats to Australia's
+imperilled species and implications for a national conservation response.
+*Pacific Conservation Biology, 25*(3), 231-244.
+[https://doi.org/10.1071/PC18024](https://doi.org/10.1071/PC18024)
+
+Knight, B. (2023, October 23). Biodiversity can rebound after bushfires,
+but recovery lags in severely burnt areas. *UNSW Newsroom*.
+[https://www.unsw.edu.au/newsroom/news/2023/10/biodiversity-can-rebound-after-bushfires--but-recovery-lags-in-s](https://www.unsw.edu.au/newsroom/news/2023/10/biodiversity-can-rebound-after-bushfires--but-recovery-lags-in-s)
+
+Linley, G. D., Jolly, C. J., Doherty, T. S., et al. (2022). What do you
+mean, 'megafire'? *Global Ecology and Biogeography, 31*(10), 1906-1922.
+[https://doi.org/10.1111/geb.13499](https://doi.org/10.1111/geb.13499)
 
 Sillmann, J., Kharin, V. V., Zhang, X., Zwiers, F. W., & Bronaugh, D.
 R. (2013). Climate extremes indices in the CMIP5 multimodel ensemble:
 Part 1. Model evaluation in the present climate. *Journal of
 Geophysical Research: Atmospheres, 118*(4), 1716-1733.
-https://doi.org/10.1002/jgrd.50203
+[https://doi.org/10.1002/jgrd.50203](https://doi.org/10.1002/jgrd.50203)
 
 World Meteorological Organization. (2017). *WMO Guidelines on the
 Calculation of Climate Normals* (WMO-No. 1203).
-https://library.wmo.int/idurl/4/55797
+[https://library.wmo.int/idurl/4/55797](https://library.wmo.int/idurl/4/55797)
+
+## Dataset and spatial-layer sources
+
+Atlas of Living Australia. (2026). *Occurrence records for the six
+indicator species*, accessed through the ALA API using `galah`, 22 July
+2026. [https://www.ala.org.au/](https://www.ala.org.au/)
+
+Belbin, L., Wallis, E., Hobern, D., & Zerger, A. (2021). The Atlas of
+Living Australia: History, current state and future directions.
+*Biodiversity Data Journal, 9*, e65023.
+[https://doi.org/10.3897/BDJ.9.e65023](https://doi.org/10.3897/BDJ.9.e65023)
+
+Burton, C., Rifai, S., Renzullo, L., & Van Dijk, A. (2024). *AusENDVI: A
+long-term NDVI dataset for Australia* (Version 0.1.0) [Data set]. Zenodo.
+[https://doi.org/10.5281/zenodo.10802704](https://doi.org/10.5281/zenodo.10802704)
+
+Bureau of Meteorology. (n.d.). *Australian Climate Observations Reference
+Network - Surface Air Temperature (ACORN-SAT)*. Accessed 22 July 2026.
+[https://www.bom.gov.au/climate/data/acorn-sat/](https://www.bom.gov.au/climate/data/acorn-sat/)
+
+Copernicus Climate Change Service. (2026). *ERA5-Land daily aggregated
+climate reanalysis*, accessed through Google Earth Engine, 22 July 2026.
+Contains modified Copernicus Climate Change Service Information 2026.
+[Earth Engine catalogue](https://developers.google.com/earth-engine/datasets/catalog/ECMWF_ERA5_LAND_DAILY_AGGR)
+
+Food and Agriculture Organization of the United Nations. (2015). *Global
+Administrative Unit Layers 2015, second-level administrative units
+(FAO/GAUL/2015/level2)*.
+[Earth Engine catalogue](https://developers.google.com/earth-engine/datasets/catalog/FAO_GAUL_2015_level2)
+
+NSW National Parks and Wildlife Service. (n.d.). *Fire History -
+Wildfires and Prescribed Burns*.
+[SEED NSW](https://datasets.seed.nsw.gov.au/dataset/fire-history-wildfires-and-prescribed-burns-1e8b6)
+
+Queensland Parks and Wildlife Service. (n.d.). *Fire History - Queensland
+Parks and Wildlife Service*.
+[Queensland Open Data Portal](https://www.data.qld.gov.au/dataset/fire-history-queensland-parks-and-wildlife-service/resource/d132ff1e-db3d-4de1-a848-6bf3c812cd1c)
+
+Victorian Department of Energy, Environment and Climate Action. (n.d.).
+*Fire History Records of Fires across Victoria*.
+[Data.Vic](https://discover.data.vic.gov.au/dataset/fire-history-records-of-fires-across-victoria)
+
+Victorian Department of Energy, Environment and Climate Action. (n.d.).
+*Fire history overlay of most recent fires*. Current local
+`FIRE_HISTORY_LASTBURNT` input; replace with the cumulative history above
+for repeated-fire analysis.
+[Data.Vic](https://discover.data.vic.gov.au/dataset/fire-history-overlay-of-most-recent-fires)
+
+South Australian Department for Environment and Water. (n.d.). *Bushfires
+and Prescribed Burns History*.
+[Data.SA](https://data.sa.gov.au/data/dataset/fire-history)
+
+Department of Natural Resources and Environment Tasmania. (n.d.). *LIST
+Fire History*.
+[LISTdata](https://listdata.thelist.tas.gov.au/opendata/)
+
+Western Australian Department of Biodiversity, Conservation and
+Attractions. (n.d.). *DBCA Fire History (DBCA-060)*.
+[data.wa.gov.au](https://catalogue.data.wa.gov.au/dataset/dbca-fire-history)
+
+Northern Territory Fire and Emergency Service. (n.d.). *NT Fire History*.
+[NT Open Data Portal](https://data.nt.gov.au/dataset/nt-fire-history)
