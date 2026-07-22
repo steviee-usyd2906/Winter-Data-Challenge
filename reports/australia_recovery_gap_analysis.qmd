@@ -176,13 +176,13 @@ folder (`fire_history_eda.ipynb`, `fire_heat_recovery_analysis.qmd`):
 
 | Dataset | Role |
 |---|---|
-| NSW/QLD/VIC fire history shapefiles | major fire events (>= 1,000 ha) and severity, per LGA-division-year |
+| NSW/QLD/VIC fire history shapefiles | major fire events (>= 10,000 ha) and severity, per LGA-division-year |
 | `AusENDVI-clim_MCD43A4...nc` | vegetation recovery signal (NDVI) |
 | `animal_sightings.csv` | koala / greater glider / yellow-bellied glider presence |
 | ERA5-Land daily max temperature | post-fire heat exposure, relative to each division's own baseline |
 
 The analysis unit is the **individual major fire event** (division x
-fire-year, fire >= 1,000 ha) -- not the whole division. Vegetation and
+fire-year, fire >= 10,000 ha) -- not the whole division. Vegetation and
 wildlife recovery are both computed as a Relative Recovery Indicator (RRI,
 adapted from Frazier et al., 2018 -- see Section 11), which requires a
 measurable dip in the fire year itself; that requirement is easy for NDVI
@@ -652,7 +652,7 @@ not a precisely estimated effect size.
 
 | Term | Definition |
 |---|---|
-| **Major fire event** | A division-year with at least one recorded fire >= 1,000 ha -- separates landscape-scale wildfires from routine hazard-reduction burns, which are recorded in almost every year in most fire-prone divisions. |
+| **Major fire event** | A division-year with at least one recorded fire >= 10,000 ha -- separates landscape-scale wildfires from routine hazard-reduction burns, which are recorded in almost every year in most fire-prone divisions. |
 | **Pre-fire baseline** | The mean of the two years immediately before the fire year (Y-1, Y-2), computed separately for NDVI and for sightings share. |
 | **Fire-year value (Y0)** | The NDVI/sightings-share value in the fire year itself -- stands in for the "disturbance trough" that Frazier et al. (2018) locate precisely from per-pixel LandTrendr segmentation; here it is just the annual division-wide composite for that calendar year, a noisier proxy for the same idea (see Section 9). |
 | **Post-fire recovery window** | The best available value among Y+3, Y+4, Y+5 -- adapted from the paper's fixed Y+4/Y+5 window so that fires from 2019 onward (including Black Summer) are not dropped by the NDVI data's 2022 cutoff. |

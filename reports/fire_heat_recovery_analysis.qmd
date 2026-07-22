@@ -32,7 +32,7 @@ This extends the earlier fire-history / NDVI / sightings EDA
 (`fire_history_eda.ipynb`) by adding a fourth dataset -- **daily maximum
 temperature** -- so that "recovery" can be tested against *climate
 stress* rather than just fire frequency. The unit of analysis is the
-**major fire event** (a division-year with at least one fire \>= 1,000
+**major fire event** (a division-year with at least one fire \>= 10,000
 ha, i.e. a landscape-scale burn rather than a routine hazard-reduction
 block), not the whole division, which gives far more statistical power
 than the division-level aggregates used in the earlier notebook.
@@ -139,7 +139,7 @@ Reusing the caches already built in `fire_history_eda.ipynb` section 7
 (`ndvi_annual_by_division.csv`, `fire_events_by_division_year.csv`,
 `animal_sightings_by_division_year.csv`), the analysis unit here is the
 **individual major fire event** (one row per division x fire-year with a
-fire \>= 1,000 ha), not the division. For each event:
+fire \>= 10,000 ha), not the division. For each event:
 
 - **Fire severity**: `max_area_ha` of the largest fire that
   division-year (log-transformed for modelling).
@@ -532,7 +532,7 @@ this finding than any further modelling choice would.
   km), same resolution class as the NDVI product but still coarser than
   the station-level ACORN-SAT record; a single division can span a large
   temperature gradient (coast to range).
-- **The 1,000 ha "major fire" threshold is a design choice**, not a
+- **The 10,000 ha "major fire" threshold is a design choice**, not a
   physical constant -- chosen to separate wildfires from routine
   hazard-reduction burns.
 - **The recovery ratio is an adapted RRI, not the original Frazier et al.
