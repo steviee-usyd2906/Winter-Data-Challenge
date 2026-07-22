@@ -949,23 +949,29 @@ div_agg_labelled = div_agg.rename(columns={
 })
 
 fig_map = px.choropleth_map(
-    div_agg_labelled, geojson=geojson, locations="ADM2_NAME", featureidkey="properties.ADM2_NAME",
+    div_agg_labelled, geojson=geojson, locations="division_id", featureidkey="properties.division_id",
     color="Mean recovery gap", color_continuous_scale="RdBu_r", color_continuous_midpoint=0,
     hover_name="ADM2_NAME",
     hover_data={"State": True, "Mean recovery gap": ":.2f",
                 "Mean post-fire heat anomaly (extra hot days/yr)": ":.1f",
                 "Mean NDVI recovery ratio": ":.2f", "Mean sightings recovery ratio": ":.2f",
                 "Number of major fire events": True},
-    map_style="carto-positron", zoom=3.2, center={"lat": -28, "lon": 145}, opacity=0.75, height=650,
+    # An offline background keeps the map visible when this self-contained
+    # report is opened without access to external map-tile servers.
+    map_style="white-bg", zoom=3.2, center={"lat": -28, "lon": 145}, opacity=0.75, height=650,
 )
 fig_map.update_layout(
     title=dict(text="Mean post-fire recovery gap by fire-prone division<br>"
-                     "<sup>Red = vegetation recovers better than wildlife (widening blind-spot risk); Blue = the two track together</sup>",
+                     "<sup>Red = vegetation recovery exceeds wildlife recovery; Blue = the two signals track together</sup>",
                x=0.02, y=0.98),
     margin=dict(l=0, r=0, t=70, b=0),
     coloraxis_colorbar=dict(title="Mean recovery gap<br>(+ = vegetation<br>outpaces wildlife)"),
 )
-fig_map
+# Embed Plotly directly in the report. Quarto's default Jupyter renderer can
+# otherwise leave a CDN import in the HTML, causing a blank map when opened
+# locally or where external scripts are blocked.
+from IPython.display import HTML, display
+display(HTML(fig_map.to_html(full_html=False, include_plotlyjs=True)))
 ```
 
 # Visual evidence
