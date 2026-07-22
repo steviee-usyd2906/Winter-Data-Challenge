@@ -7,6 +7,7 @@ data/SA_fire_history
 data/WA_fire_history
 data/TAS_fire_history
 data/au_admin2_boundaries.geojson
+data/*
 AusENDVI-clim_MCD43A4_gapfilled_1982_2022_0.1.0.nc
 .Rhistory
 .Rproj.user/
