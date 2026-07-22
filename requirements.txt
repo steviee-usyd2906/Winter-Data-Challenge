@@ -1,0 +1,19 @@
+# Core scientific computing
+numpy
+pandas
+scipy
+statsmodels
+
+# Visualisation
+matplotlib
+plotly
+
+# Spatial analysis
+geopandas
+
+# Quarto / Jupyter execution
+notebook
+jupyter
+nbclient
+nbformat
+ipykernel
