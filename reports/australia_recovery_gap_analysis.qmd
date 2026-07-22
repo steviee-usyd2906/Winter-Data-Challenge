@@ -1,22 +1,132 @@
 ---
 title: "Is Australia Doing Well? The Widening Blind Spot in 'It's Green Again'"
 subtitle: "Why post-fire vegetation greening is an increasingly unreliable proxy for wildlife recovery as heat exposure rises"
-author: "Winter Data project"
+author:
+  - name: "[Team members + SID]"
+    affiliation: "The University of Sydney - Winter Data Analysis Challenge"
 date: today
 format:
   html:
     toc: true
     toc-depth: 3
-    code-fold: show
+    toc-location: left
+    number-sections: true
+    theme: cosmo
+    code-fold: true
     code-tools: true
-    embed-resources: true
-    theme: flatly
+    fig-align: center
+    fig-cap-location: bottom
     fig-width: 8
     fig-height: 5
+    embed-resources: true
+editor:
+  markdown:
+    wrap: 72
 execute:
   warning: false
+  message: false
 jupyter: python3
 ---
+
+```{=html}
+<style>
+/* ---- Report styling (single-file, no external SCSS) ---- */
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700&family=Source+Sans+3:wght@400;500;600;700&display=swap');
+
+body { font-family: "Source Sans 3", -apple-system, sans-serif; color: #1F2937; line-height: 1.7; }
+h1, h2, h3, h4 { font-family: "Source Serif 4", Georgia, serif; font-weight: 700; letter-spacing: -0.01em; color: #1E3A8A; }
+h1:not(.title) { margin-top: 2.4rem; padding-bottom: 0.4rem; border-bottom: 2px solid #1E3A8A; }
+h2 { margin-top: 1.8rem; color: #1E40AF; }
+h3 { margin-top: 1.4rem; color: #2952c8; font-weight: 600; }
+.header-section-number { color: #D97706; font-weight: 700; margin-right: 0.3rem; }
+
+#title-block-header {
+  margin-bottom: 2.5rem; padding: 2.4rem; border-radius: 14px;
+  background: linear-gradient(135deg, #1E3A8A 0%, #1E40AF 55%, #312E81 100%);
+  color: #EFF6FF;
+}
+#title-block-header .title { color: #fff; font-weight: 700; }
+#title-block-header .subtitle, #title-block-header .quarto-title-meta, #title-block-header a { color: #DBEAFE; }
+
+a { color: #1E40AF; text-decoration: none; border-bottom: 1px solid rgba(30,64,175,.25); }
+a:hover { color: #D97706; border-bottom-color: #D97706; }
+
+nav[role="doc-toc"] a { border-bottom: none; color: #475569; font-size: .9rem; }
+nav[role="doc-toc"] .active { color: #1E3A8A !important; font-weight: 600; border-left: 2px solid #D97706; padding-left: .5rem; }
+
+table { font-size: .9rem; border-collapse: collapse; margin: 1.5rem auto; }
+thead th { background: #1E3A8A; color: #fff; font-weight: 600; padding: .5rem .75rem; }
+tbody td { padding: .45rem .75rem; border-bottom: 1px solid #E5E7EB; }
+tbody tr:nth-child(even) { background: #F8FAFC; }
+
+figure img { border: 1px solid #E5E7EB; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04); }
+figcaption { font-size: .85rem; color: #6B7280; text-align: center; margin-top: .6rem; font-style: italic; }
+
+code { background: #F1F5F9; color: #BE123C; padding: .1rem .35rem; border-radius: 4px; }
+blockquote { border-left: 3px solid #D97706; background: #F8FAFC; padding: .8rem 1.2rem; }
+p strong:first-child { color: #1E3A8A; }
+main { max-width: 860px; }
+
+/* ---- Prominent Code-tools button (top-right "</> Code" menu) ---- */
+#quarto-code-tools-menu, .code-tools-button, a.code-tools-button,
+button.code-tools-button, #quarto-code-tools-source,
+.quarto-title-tools, .quarto-code-tools-button {
+  display: inline-flex !important; align-items: center;
+  background: #D97706 !important; color: #ffffff !important;
+  border: 2px solid #B45309 !important; border-radius: 8px !important;
+  padding: 0.4rem 0.9rem !important; font-weight: 700 !important;
+  font-family: "Source Sans 3", sans-serif !important; font-size: 0.95rem !important;
+  text-decoration: none !important; box-shadow: 0 2px 6px rgba(217,119,6,.35) !important;
+  transition: background .15s ease, transform .15s ease; z-index: 1000;
+}
+#quarto-code-tools-menu:hover, .code-tools-button:hover,
+a.code-tools-button:hover, button.code-tools-button:hover,
+#quarto-code-tools-source:hover, .quarto-code-tools-button:hover {
+  background: #B45309 !important; color: #fff !important;
+  transform: translateY(-1px); box-shadow: 0 4px 10px rgba(217,119,6,.45) !important;
+}
+.code-tools-button .bi, #quarto-code-tools-menu .bi { color: #fff !important; }
+
+/* ---- Code-tools dropdown menu (Show All / Hide All Code / View Source) ---- */
+/* The menu that opens on click: black text on a white background */
+.quarto-code-tools-button + .dropdown-menu,
+#quarto-code-tools-menu + .dropdown-menu,
+.code-tools-button + .dropdown-menu,
+ul.dropdown-menu[aria-labelledby*="code-tools"],
+.dropdown-menu.show {
+  background-color: #ffffff !important;
+  border: 1px solid #CBD5E1 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 14px rgba(0,0,0,.12) !important;
+  padding: 0.25rem 0 !important;
+}
+.quarto-code-tools-button + .dropdown-menu .dropdown-item,
+#quarto-code-tools-menu + .dropdown-menu .dropdown-item,
+.code-tools-button + .dropdown-menu .dropdown-item,
+ul.dropdown-menu[aria-labelledby*="code-tools"] .dropdown-item,
+.dropdown-menu.show .dropdown-item {
+  color: #000000 !important;
+  background-color: #ffffff !important;
+  font-family: "Source Sans 3", sans-serif !important;
+  font-weight: 500 !important;
+  padding: 0.4rem 1rem !important;
+}
+/* Hover/focus state: keep text black, light grey background for feedback */
+.quarto-code-tools-button + .dropdown-menu .dropdown-item:hover,
+.quarto-code-tools-button + .dropdown-menu .dropdown-item:focus,
+#quarto-code-tools-menu + .dropdown-menu .dropdown-item:hover,
+#quarto-code-tools-menu + .dropdown-menu .dropdown-item:focus,
+.code-tools-button + .dropdown-menu .dropdown-item:hover,
+.code-tools-button + .dropdown-menu .dropdown-item:focus,
+ul.dropdown-menu[aria-labelledby*="code-tools"] .dropdown-item:hover,
+ul.dropdown-menu[aria-labelledby*="code-tools"] .dropdown-item:focus,
+.dropdown-menu.show .dropdown-item:hover,
+.dropdown-menu.show .dropdown-item:focus {
+  color: #000000 !important;
+  background-color: #F1F5F9 !important;
+}
+</style>
+```
 
 ## 1. Research question
 
