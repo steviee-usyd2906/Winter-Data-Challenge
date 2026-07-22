@@ -1,6 +1,6 @@
 ---
 title: "Fire, Heat, and the Wildlife Recovery Gap in Australia"
-subtitle: "A complete pipeline: from raw fire-history shapefiles to an event-level test of whether post-fire heat widens the gap between vegetation greening and wildlife recovery"
+subtitle: "Does post-fire heat exposure widen the gap between vegetation greening and wildlife recovery?"
 author:
   - name: "Hieu Do (SID:540914928)"
   - name: "Van Duong (SID:530745613)"
@@ -127,7 +127,31 @@ ul.dropdown-menu[aria-labelledby*="code-tools"] .dropdown-item:focus,
 </style>
 ```
 
+# Introduction & research question
+
+> **Does post-fire heat exposure widen the gap between vegetation
+> recovery and wildlife recovery -- i.e. does the reassuring "it's
+> green again" signal from satellite NDVI become a progressively worse
+> proxy for "the habitat is fine" as the years after a fire get
+> hotter?**
+
+The analysis unit is the **individual major fire event** (one row per
+division x fire-year with a fire `>= 10,000 ha`), not the whole
+division -- this is what lets each event's own post-fire heat exposure
+be measured directly and gives real statistical power. Every dataset
+below is built **exactly once**; every later section reuses that one
+copy rather than re-loading or re-deriving it.
+
+| Dataset | Role | Source |
+|----|----|----|
+| Fire history shapefiles, 7 states/territories | disturbance events: location, date, area | NSW (NPWS), QLD (QPWS), VIC (DEECA), SA, TAS, WA (DBCA), NT |
+| `FAO/GAUL/2015/level2` admin-2 boundaries | LGA-level division geometries | Google Earth Engine |
+| `AusENDVI-clim_MCD43A4...nc` | vegetation recovery signal (NDVI), 1982-2022 | Gap-filled MODIS NDVI climatology |
+| ERA5-Land daily max temperature | post-fire heat exposure, relative to each division's own baseline | Earth Engine, 1982-2022 |
+| Koala / greater glider / yellow-bellied glider / yellow-tailed black-cockatoo / powerful owl / little lorikeet occurrences | wildlife presence (6 canopy/hollow-dependent indicator species) | Atlas of Living Australia (`galah`), 1990-2026, all 7 states/territories |
+
 # Setup
+
 ```{python}
 import os
 import json
@@ -144,55 +168,20 @@ DATA_DIR = os.path.join(os.getcwd(), "..", "data")  # report lives in reports/, 
 pd.set_option("display.width", 140)
 
 def sig(p, thresh=0.05):
-    """Small helper so every significance claim below is read live off the
-    current p-value rather than typed as a fixed claim in prose."""
-    return f"significant (p = {p:.3g} < {thresh})" if p < thresh else f"not significant (p = {p:.3g} ≥ {thresh})"
+    """So every significance claim below is read live off the current
+    p-value rather than typed as a fixed claim in prose."""
+    return f"significant (p = {p:.3g} < {thresh})" if p < thresh else f"not significant (p = {p:.3g} >= {thresh})"
 ```
-
-# Introduction & research questions
-
-This report examines whether visible vegetation recovery after major
-wildfire corresponds with wildlife recovery, and whether repeated fire
-or unusually hot post-fire conditions alter that relationship. It
-combines spatial fire histories, satellite vegetation data, gridded
-temperature data, and animal occurrence records in a reproducible
-analysis spanning seven Australian states and territories.
-
-Two connected questions are asked, in order:
-
-> **Q1 (repeated-fire analysis).** Among divisions that keep re-burning, does
-> vegetation (NDVI) or wildlife-sighting recovery show a progressively
-> **weaker** trend the more often a division has had a major fire?
-
-> **Q2 (post-fire heat analysis).** Does **post-fire heat
-> exposure** widen the gap between vegetation recovery and wildlife
-> recovery -- i.e. does the reassuring "it's green again" signal from
-> satellite NDVI become a progressively worse proxy for "the habitat is
-> fine" as the years after a fire get hotter?
-
-Q1 is answered at **division level** using fire frequency alone. Q2
-uses an **event-level** design (one row per major fire rather than one
-row per division) and adds daily heat exposure, allowing recovery to be
-tested against climate stress for each event. The two analyses are
-complementary: Q1 describes long-term patterns associated with repeated
-fire, while Q2 tests recovery following individual major fires.
-
-| Dataset | Role | Source |
-|----|----|----|
-| Fire history shapefiles, 7 states/territories | disturbance events: location, date, area | NSW (NPWS), QLD (QPWS), VIC (DEECA), SA, TAS, WA (DBCA), NT |
-| `FAO/GAUL/2015/level2` admin-2 boundaries | LGA-level division geometries | Google Earth Engine |
-| `AusENDVI-clim_MCD43A4...nc` | vegetation recovery signal (NDVI), 1982-2022 | Gap-filled MODIS NDVI climatology |
-| ERA5-Land daily max temperature | post-fire heat exposure, relative to each division's own baseline | Earth Engine, 1982-2022 |
-| Koala / greater glider / yellow-bellied glider / yellow-tailed black-cockatoo / powerful owl / little lorikeet occurrences | wildlife presence (6 canopy/hollow-dependent indicator species) | Atlas of Living Australia (`galah`), 1990-2026, all 7 states/territories |
 
 # Data sources & processing pipeline
 
-Each subsection explains how a source dataset was standardised for the
-analysis. Computationally intensive extraction steps -- including
-reading large spatial files, processing the NetCDF vegetation product,
-and querying Earth Engine or the ALA API -- are included for
-reproducibility but marked `eval: false`. The following executable cells
-load the derived analysis tables and report their current contents.
+Each subsection documents how one cached file in `data/` was built. The
+raw-data steps (reading multi-gigabyte shapefiles/netCDF, calling Earth
+Engine, calling the ALA API) are shown as code but marked `eval: false`
+-- they need local raw data and/or authenticated cloud access that this
+report doesn't assume is present at render time -- immediately followed
+by a **live** cell that loads the resulting cached CSV and reports the
+real, current numbers.
 
 ## Fire history: loading and standardising 7 jurisdictions
 
@@ -280,9 +269,8 @@ print(f"Total fire records: {len(fires)}")
 
 ## Admin-2 (LGA-level) division boundaries
 
-Administrative division boundaries are obtained from Earth Engine's
-`FAO/GAUL/2015/level2` collection and stored locally for reproducible
-spatial joins.
+A small one-time vector pull from Earth Engine (`FAO/GAUL/2015/level2`),
+cached locally so it only hits Earth Engine once.
 
 ```{python}
 #| eval: false
@@ -312,12 +300,12 @@ print(f"{len(admin2)} admin-2 divisions loaded, covering: {sorted(admin2['ADM1_N
 Fires are spatially joined to divisions on the fire polygon's
 **centroid** (fast point-in-polygon; fine here since only "which
 division is this fire mostly in" is needed, not exact boundary
-overlap -- this keeps the 440k-row Victorian layer fast to join).
-Fire count alone favours Victoria, which has ~440k small recorded burns
-(median ~11 ha) spread over few divisions, versus NSW/QLD's far fewer
-but much larger fires. Requiring **both** a minimum fire count *and* a
-minimum average area per fire targets divisions with frequent,
-*significant* fire activity, not just lots of small planned burns.
+overlap). Fire count alone favours Victoria, which has ~440k small
+recorded burns (median ~11 ha) spread over few divisions, versus
+NSW/QLD's far fewer but much larger fires. Requiring **both** a minimum
+fire count *and* a minimum average area per fire targets divisions with
+frequent, *significant* fire activity, not just lots of small planned
+burns.
 
 ```{python}
 #| eval: false
@@ -493,14 +481,13 @@ print(f"{heat.shape[0]} division-year rows, {heat['ADM2_NAME'].nunique()} divisi
 Six canopy/hollow-dependent species -- koala, greater glider,
 yellow-bellied glider, yellow-tailed black-cockatoo, powerful owl, and
 little lorikeet -- are pulled from the Atlas of Living Australia via
-`galah`, across the seven included jurisdictions, 1990-2026.
-Citizen-science reporting effort has
-grown enormously nation-wide since the 1990s (more observers, apps like
-iNaturalist), so each division's sightings are later expressed as a
-**share of that year's total sightings across all fire-prone
-divisions** -- a division whose wildlife is genuinely declining
-relative to everywhere else should lose share over time even while the
-nationwide raw count keeps climbing.
+`galah`, across all 7 states/territories, 1990-2026. Citizen-science
+reporting effort has grown enormously nation-wide since the 1990s (more
+observers, apps like iNaturalist), so each division's sightings are
+later expressed as a **share of that year's total sightings across all
+fire-prone divisions** -- a division whose wildlife is genuinely
+declining relative to everywhere else should lose share over time even
+while the nationwide raw count keeps climbing.
 
 ```{python}
 #| eval: false
@@ -552,170 +539,7 @@ print(f"{sightings_raw['sightings'].sum()} sightings across {sightings_raw['ADM2
       f"states: {sorted(sightings_raw['ADM1_NAME'].unique())}")
 ```
 
-# Q1 results -- does fire frequency predict weaker recovery? {#sec-q1}
-
-Before bringing heat into the picture: among the fire-prone divisions
-above, do the ones that keep re-burning show a progressively **weaker**
-NDVI or wildlife-sighting recovery, or a long-term downward trend that
-tracks fire frequency alone? This section works at **division level**
-across the full 1982-2022 (NDVI) / 1995-2025 (sightings) record, using
-only `major` fire counts -- no heat data yet.
-
-Sightings are converted to each division's share of the annual record so
-that the analysis partially accounts for growth in reporting effort over
-time.
-
-```{python}
-div_year = sightings_raw.groupby(["ADM1_NAME", "ADM2_NAME", "year"])["sightings"].sum().reset_index()
-total_per_year = div_year.groupby("year")["sightings"].sum().rename("total_sightings_all_divs")
-div_year = div_year.merge(total_per_year, on="year")
-div_year["share"] = div_year["sightings"] / div_year["total_sightings_all_divs"]
-share_piv = div_year.pivot_table(index=["ADM1_NAME", "ADM2_NAME"], columns="year", values="share")
-total_sightings_per_div = sightings_raw.groupby(["ADM1_NAME", "ADM2_NAME"])["sightings"].sum()
-```
-
-## NDVI trend vs. major-fire frequency
-
-```{python}
-NDVI_YEARS = ndvi.columns.values.astype(float)
-
-def linear_trend(row):
-    slope, _ = np.polyfit(NDVI_YEARS, row.values.astype(float), 1)
-    return slope
-
-ndvi_trend = ndvi.apply(linear_trend, axis=1).rename("ndvi_trend_per_yr").reset_index()
-n_major = (major[major["year"].between(1982, 2022)].groupby(["ADM1_NAME", "ADM2_NAME"])["year"].nunique()
-           .rename("n_major_fire_years").reset_index())
-ndvi_trend = ndvi_trend.merge(n_major, on=["ADM1_NAME", "ADM2_NAME"], how="left")
-ndvi_trend["n_major_fire_years"] = ndvi_trend["n_major_fire_years"].fillna(0)
-ndvi_trend["major_fires_per_decade"] = ndvi_trend["n_major_fire_years"] / 41 * 10
-
-corr_ndvi = ndvi_trend[["major_fires_per_decade", "ndvi_trend_per_yr"]].corr().iloc[0, 1]
-print(f"Correlation(major_fires_per_decade, NDVI trend/yr) across {len(ndvi_trend)} fire-prone divisions: {corr_ndvi:.3f}")
-
-fig, ax = plt.subplots(figsize=(6, 5))
-ax.scatter(ndvi_trend["major_fires_per_decade"], ndvi_trend["ndvi_trend_per_yr"], alpha=0.6)
-ax.axhline(0, color="grey", lw=0.8)
-ax.set_xlabel("major fires (>= 10,000 ha) per decade, 1982-2022")
-ax.set_ylabel("NDVI linear trend per year")
-ax.set_title("Repeated major fires vs long-term NDVI trend\n(fire-prone LGA divisions)")
-plt.tight_layout()
-plt.show()
-```
-
-## Sightings-share trend vs. major-fire frequency
-
-```{python}
-YEAR_MIN, YEAR_MAX = 1995, 2025  # sightings are too sparse before ~1995 to trust a yearly share
-rows = []
-for (state, div), g in div_year.groupby(["ADM1_NAME", "ADM2_NAME"]):
-    g = g[g["year"].between(YEAR_MIN, YEAR_MAX)].sort_values("year")
-    if len(g) < 8:
-        continue
-    slope, _ = np.polyfit(g["year"].values.astype(float), g["share"].values.astype(float), 1)
-    rel_slope = slope / g["share"].mean() if g["share"].mean() > 0 else np.nan
-    my = major[(major.ADM1_NAME == state) & (major.ADM2_NAME == div) & (major.year.between(YEAR_MIN, YEAR_MAX))]
-    rows.append({"ADM1_NAME": state, "ADM2_NAME": div, "share_trend_rel_per_yr": rel_slope,
-                 "major_fires_per_decade": my["year"].nunique() / (YEAR_MAX - YEAR_MIN + 1) * 10})
-sightings_trend = pd.DataFrame(rows)
-
-corr_sight = sightings_trend[["major_fires_per_decade", "share_trend_rel_per_yr"]].corr().iloc[0, 1]
-print(f"Correlation(major_fires_per_decade, sightings-share trend) across {len(sightings_trend)} divisions: {corr_sight:.3f}")
-
-fig, ax = plt.subplots(figsize=(6, 5))
-ax.scatter(sightings_trend["major_fires_per_decade"], sightings_trend["share_trend_rel_per_yr"], alpha=0.6, color="darkorange")
-ax.axhline(0, color="grey", lw=0.8)
-ax.set_xlabel("major fires (>= 10,000 ha) per decade, 1995-2025")
-ax.set_ylabel("relative trend in share of all indicator-species sightings")
-ax.set_title("Repeated major fires vs sightings-share trend\n(6 canopy/hollow-dependent indicator species)")
-plt.tight_layout()
-plt.show()
-```
-
-## Case studies
-
-The fire-prone divisions with the largest single recorded fire *and*
-enough sighting data to be informative (>= 1,000 total sightings),
-NDVI and sightings-share plotted side by side with major-fire years
-marked.
-
-```{python}
-case_study_candidates = (
-    major.groupby(["ADM1_NAME", "ADM2_NAME"])
-    .agg(max_single_fire_ha=("max_area_ha", "max"))
-    .reset_index()
-    .merge(div_year.groupby(["ADM1_NAME", "ADM2_NAME"])["sightings"].sum().rename("total_sightings").reset_index(),
-           on=["ADM1_NAME", "ADM2_NAME"])
-)
-case_study_divs = list(
-    case_study_candidates[case_study_candidates["total_sightings"] >= 1000]
-    .sort_values("max_single_fire_ha", ascending=False)
-    .head(4)[["ADM1_NAME", "ADM2_NAME"]]
-    .itertuples(index=False, name=None)
-)
-print("Case-study divisions (largest single recorded fire, with enough sighting data to be informative):")
-for state, div in case_study_divs:
-    print(" -", div, f"({state})")
-
-div_year_share_pct = div_year.copy()
-div_year_share_pct["share_pct"] = 100 * div_year_share_pct["share"]
-
-fig, axes = plt.subplots(max(len(case_study_divs), 1), 2, figsize=(13, 3 * max(len(case_study_divs), 1)))
-if len(case_study_divs) == 1:
-    axes = axes.reshape(1, -1)
-for i, (state, div) in enumerate(case_study_divs):
-    ndvi_row = ndvi.loc[(state, div)]
-    fy = sorted(major[(major.ADM1_NAME == state) & (major.ADM2_NAME == div)]["year"].unique())
-
-    ax = axes[i, 0]
-    ax.plot(ndvi_row.index, ndvi_row.values, marker="o", ms=3, color="seagreen")
-    for y in fy:
-        if y in ndvi_row.index:
-            ax.axvline(y, color="firebrick", alpha=0.15, lw=2)
-    ax.set_title(f"{div} -- annual NDVI (red = major fire year)")
-    ax.set_xlim(1982, 2022)
-
-    ax2 = axes[i, 1]
-    g = div_year_share_pct[(div_year_share_pct.ADM1_NAME == state) & (div_year_share_pct.ADM2_NAME == div)]
-    g = g.set_index("year")["share_pct"].reindex(range(YEAR_MIN, YEAR_MAX + 1), fill_value=0)
-    ax2.bar(g.index, g.values, color="steelblue")
-    for y in fy:
-        if YEAR_MIN <= y <= YEAR_MAX:
-            ax2.axvline(y, color="firebrick", alpha=0.15, lw=2)
-    ax2.set_title(f"{div} -- share of all fire-prone-division sightings (%)")
-    ax2.set_xlim(YEAR_MIN, YEAR_MAX)
-
-plt.tight_layout()
-plt.show()
-```
-
-## Q1 summary
-
-Correlation across fire-prone divisions is `{python} f"{corr_ndvi:.2f}"`
-for (major fires/decade, NDVI trend) and `{python} f"{corr_sight:.2f}"`
-for (major fires/decade, sightings-share trend). NDVI trend at this
-LGA-averaged, annual resolution shows little to no relationship with
-raw fire frequency -- vegetation greenness tends to rebound to, or
-above, its pre-fire level within a few years, repeatedly, regardless of
-how often a division has burnt. Wildlife-sightings share shows a
-clearer negative tendency: divisions burning more often lose a larger
-share of the regional sighting record over time, even after
-normalising for the nationwide rise in reporting effort. Read together
-this is consistent with a real ecological asymmetry rather than a data
-artefact -- leaf-level greenness recovers on a vegetation-growth
-timescale of a few years, while hollow-dependent species depend on
-habitat *structure* (large old trees with hollows) that takes decades
-to regenerate. These are exploratory division-level associations and
-do not control for heat, remoteness, or drought. Q2 therefore adds heat
-exposure and moves to event-level testing.
-
-# Q2 methods -- event-level recovery
-
-The analysis unit changes here from *division* to **individual major
-fire event** (one row per division x fire-year with a fire
-`>= 10,000 ha`) -- this provides more observations than the
-division-level analysis in Q1 and lets each event's post-fire heat
-exposure be measured directly.
+# Building the event-level recovery dataset
 
 **Recovery ratio (RRI)**, adapted from Frazier et al. (2018, *Remote
 Sensing of Environment* 205:32-45): `RRI = ARI / disturbance magnitude`,
@@ -741,7 +565,19 @@ division's* long-run mean hot-day count -- isolating "was this recovery
 window unusually hot for this place", not just re-detecting that e.g.
 inland Queensland is hotter than alpine NSW.
 
+Sightings are first converted to each division's **share** of that
+year's total sightings across all fire-prone divisions (the same
+reporting-effort correction described above), which the RRI
+construction below is then applied to.
+
 ```{python}
+div_year = sightings_raw.groupby(["ADM1_NAME", "ADM2_NAME", "year"])["sightings"].sum().reset_index()
+total_per_year = div_year.groupby("year")["sightings"].sum().rename("total_sightings_all_divs")
+div_year = div_year.merge(total_per_year, on="year")
+div_year["share"] = div_year["sightings"] / div_year["total_sightings_all_divs"]
+share_piv = div_year.pivot_table(index=["ADM1_NAME", "ADM2_NAME"], columns="year", values="share")
+total_sightings_per_div = sightings_raw.groupby(["ADM1_NAME", "ADM2_NAME"])["sightings"].sum()
+
 PRE_YEARS, HEAT_POST_LAG, RECOVERY_POST_LAGS, SMOOTH = 2, 3, [3, 4, 5], 1e-6
 
 records = []
@@ -813,18 +649,20 @@ print(f"{len(events)} of those also have a valid sightings recovery ratio in a h
       f"({events['ADM2_NAME'].nunique()} divisions, states: {sorted(events['ADM1_NAME'].unique())})")
 ```
 
-Two analysis tables are constructed: `events_all` for vegetation
-recovery and `events` for events that also pass the sightings and
-habitat-data requirements.
+`events_all` (NDVI-only) and `events` (the habitat/sightings-gated
+subset, used for every sightings-side and recovery-gap test below) are
+each built **once** here and reused unchanged for the rest of the
+report.
 
-The `>= 200` total-sightings habitat filter means that the wildlife and
-recovery-gap analyses retain only states where these six indicator
-species are recorded often enough for analysis. This is an important
-biogeographic restriction and is addressed in the Limitations section.
+The states actually retained in `events` above reflect a biogeographic
+fact, not a bug: these six indicator species are essentially
+south-eastern-Australia forest species and are rarely recorded in
+WA/NT/TAS/SA regardless of fire or NDVI coverage there, so every
+sightings-side and recovery-gap result below necessarily runs on
+whichever state(s) currently clear the `>= 200`-sightings bar (see
+Limitations).
 
-# Q2 results -- recovery gap under post-fire heat
-
-## Descriptive overview
+# Descriptive overview
 
 ```{python}
 events[["heat_anomaly_postfire", "ndvi_recovery_ratio", "sightings_recovery_ratio", "recovery_gap"]].describe()
@@ -851,7 +689,7 @@ plt.tight_layout()
 plt.show()
 ```
 
-## Spatial pattern of the recovery gap
+# Interactive map: where does the recovery gap show up?
 
 Each fire-prone division's **mean recovery gap** across all its
 major-fire events. Red = vegetation recovers substantially better than
@@ -901,9 +739,9 @@ fig_map.update_layout(
 fig_map
 ```
 
-## Recovery patterns by heat exposure
+# Visual evidence
 
-### Diverging recovery lines
+## Diverging recovery lines
 
 Both recovery ratios (log scale, 0 = back to baseline) plotted against
 post-fire heat exposure, with a trend line fit to each.
@@ -927,7 +765,7 @@ plt.tight_layout()
 plt.show()
 ```
 
-### The gap by heat tercile
+## The gap by heat tercile
 
 ```{python}
 events["heat_tercile"] = pd.qcut(events["heat_anomaly_postfire"], 3, labels=["Low heat", "Medium heat", "High heat"])
@@ -946,14 +784,14 @@ plt.show()
 tercile
 ```
 
-## Statistical evidence
+# Statistical testing
 
-Two groups of tests are reported: first, whether **each recovery ratio
-on its own** responds to heat; second, whether the **gap** between the
-two responds to heat. Reported values are calculated directly from the
-analysis tables rather than hardcoded.
+One rank-based test and one model-based test, applied first to each
+recovery ratio on its own, then to the **gap** between them -- plus a
+single robustness check. Every number below is read live off the
+current data, not hardcoded.
 
-### Do the individual recovery ratios respond to heat?
+## Do the individual recovery ratios respond to heat?
 
 **Spearman rank correlation** (no linearity/distribution assumptions):
 
@@ -962,38 +800,6 @@ r1, p1 = stats.spearmanr(events_all["heat_anomaly_postfire"], events_all["ndvi_r
 r2, p2 = stats.spearmanr(events["heat_anomaly_postfire"], events["sightings_recovery_ratio"])
 print(f"heat anomaly vs NDVI recovery ratio:       rho={r1:.3f}, p={p1:.3g}, n={len(events_all)}")
 print(f"heat anomaly vs sightings recovery ratio:  rho={r2:.3f}, p={p2:.3g}, n={len(events)}")
-```
-
-**Mann-Whitney U** (median-split high-heat vs low-heat events; one-sided since the hypothesis has a predicted direction):
-
-```{python}
-med = events_all["heat_anomaly_postfire"].median()
-hi, lo = events_all.loc[events_all.heat_anomaly_postfire > med, "ndvi_recovery_ratio"], \
-         events_all.loc[events_all.heat_anomaly_postfire <= med, "ndvi_recovery_ratio"]
-u1, pu1 = stats.mannwhitneyu(hi, lo, alternative="less")
-print(f"NDVI recovery ratio      -- high-heat median={hi.median():.4f} (n={len(hi)}), "
-      f"low-heat median={lo.median():.4f} (n={len(lo)}), U={u1:.0f}, p(high<low)={pu1:.3g}")
-
-med_s = events["heat_anomaly_postfire"].median()
-hi_s, lo_s = events.loc[events.heat_anomaly_postfire > med_s, "sightings_recovery_ratio"], \
-             events.loc[events.heat_anomaly_postfire <= med_s, "sightings_recovery_ratio"]
-u2, pu2 = stats.mannwhitneyu(hi_s, lo_s, alternative="less")
-print(f"Sightings recovery ratio -- high-heat median={hi_s.median():.4f} (n={len(hi_s)}), "
-      f"low-heat median={lo_s.median():.4f} (n={len(lo_s)}), U={u2:.0f}, p(high<low)={pu2:.3g}")
-```
-
-```{python}
-fig, axes = plt.subplots(1, 2, figsize=(11, 5))
-axes[0].boxplot([lo, hi], tick_labels=["low heat", "high heat"], showfliers=False)
-axes[0].axhline(1.0, color="grey", ls="--", lw=0.8)
-axes[0].set_ylabel("NDVI recovery ratio")
-axes[0].set_title("NDVI recovery by post-fire heat exposure")
-axes[1].boxplot([lo_s, hi_s], tick_labels=["low heat", "high heat"], showfliers=False)
-axes[1].axhline(1.0, color="grey", ls="--", lw=0.8)
-axes[1].set_ylabel("sightings-share recovery ratio")
-axes[1].set_title("Sightings recovery by post-fire heat exposure")
-plt.tight_layout()
-plt.show()
 ```
 
 **OLS regression with cluster-robust standard errors** (clustered by
@@ -1022,19 +828,13 @@ print(m2.summary())
 
 VIF ~`{python} f"{max(vif.values()):.2f}"` for both predictors -- heat
 exposure and fire severity are not confounded with each other, so their
-coefficients are independently interpretable. Fire severity
-(`log_severity`) is `{python} sig(m1.pvalues["log_severity"])` for NDVI
-and `{python} sig(m2.pvalues["log_severity"])` for sightings.
-**Post-fire heat anomaly is `{python} sig(m1.pvalues["heat_anomaly_postfire"])`
-for NDVI (n=`{python} len(events_all)`) and `{python} sig(m2.pvalues["heat_anomaly_postfire"])`
-for sightings (n=`{python} len(events)`)** in the current data. This
-should be interpreted alongside the gap-focused tests below, because
-the relative strength of the two outcomes can shift as more states and
-years of data are added.
+coefficients are independently interpretable. **Post-fire heat anomaly
+is `{python} sig(m1.pvalues["heat_anomaly_postfire"])` for NDVI
+(n=`{python} len(events_all)`) and `{python} sig(m2.pvalues["heat_anomaly_postfire"])`
+for sightings (n=`{python} len(events)`)** in the current data.
 
-Converting the coefficients to an interpretable scale -- a division
-experiencing **20 more hot days/yr than its own long-run average** in
-the recovery window after a major fire is associated with:
+A division experiencing **20 more hot days/yr than its own long-run
+average** in the recovery window after a major fire is associated with:
 
 ```{python}
 ndvi_effect = np.exp(m1.params["heat_anomaly_postfire"] * 20)
@@ -1043,31 +843,17 @@ print(f"NDVI recovery ratio      x {ndvi_effect:.3f}   ({(1-ndvi_effect)*100:.1f
 print(f"Sightings recovery ratio x {sight_effect:.3f}   ({(1-sight_effect)*100:.1f}% lower relative recovery)")
 ```
 
-### Does the vegetation-vs-sightings recovery gap widen with heat?
+## Does the vegetation-vs-sightings recovery gap widen with heat?
 
-Four further, complementary tests on the **gap** variable itself
-(`recovery_gap = log_ndvi_ratio - log_sight_ratio`), from least to most
-model-dependent, so the conclusion doesn't rest on one modelling choice.
+Same two tests, applied directly to the **gap**
+(`recovery_gap = log_ndvi_ratio - log_sight_ratio`), plus one robustness
+check on the regression slope.
 
 **Spearman rank correlation:**
 
 ```{python}
 r3, p3 = stats.spearmanr(events["heat_anomaly_postfire"], events["recovery_gap"])
 print(f"Spearman(heat anomaly, recovery gap): rho={r3:.3f}, p={p3:.4g}, n={len(events)}")
-```
-
-```{python}
-fig, ax = plt.subplots(figsize=(7, 5))
-ax.scatter(events["heat_anomaly_postfire"], events["recovery_gap"], alpha=0.35, s=15, color="seagreen")
-z3 = np.polyfit(events["heat_anomaly_postfire"], events["recovery_gap"], 1)
-xs3 = np.linspace(events["heat_anomaly_postfire"].min(), events["heat_anomaly_postfire"].max(), 50)
-ax.plot(xs3, np.polyval(z3, xs3), color="firebrick", lw=2)
-ax.axhline(0, color="grey", lw=0.8, ls="--")
-ax.set_xlabel("post-fire heat anomaly (extra hot days/yr >=35C)")
-ax.set_ylabel("recovery gap = log(NDVI ratio) - log(sightings ratio)")
-ax.set_title("Recovery gap vs post-fire heat exposure")
-plt.tight_layout()
-plt.show()
 ```
 
 **OLS, cluster-robust SEs, on the gap directly:**
@@ -1092,87 +878,29 @@ for _ in range(2000):
     boot_slopes.append(np.polyfit(boot_df["heat_anomaly_postfire"], boot_df["recovery_gap"], 1)[0])
 boot_slopes = np.array(boot_slopes)
 ci_lo, ci_hi = np.percentile(boot_slopes, [2.5, 97.5])
+boot_pos_pct = (boot_slopes > 0).mean() * 100
 print(f"bootstrap slope: mean={boot_slopes.mean():.4f}, 95% CI=[{ci_lo:.4f}, {ci_hi:.4f}]")
-print(f"fraction of 2,000 resamples with a positive slope: {(boot_slopes > 0).mean():.3f}")
+print(f"fraction of 2,000 resamples with a positive slope: {boot_pos_pct:.1f}%")
 ```
 
-**Kruskal-Wallis across heat terciles:**
+**In the current data, the gap is `{python} sig(p3)` on the Spearman
+test and `{python} sig(m3.pvalues["heat_anomaly_postfire"])` on the
+cluster-robust regression, with `{python} f"{boot_pos_pct:.0f}%"` of
+bootstrap resamples agreeing on a positive slope.** Read the *direction*
+(hotter post-fire conditions -> vegetation recovering relatively better
+than wildlife) as the robust part of this result, and the exact
+p-values as sensitive to the sightings-side sample size (see
+Limitations).
 
-```{python}
-kw_stat, kw_p = stats.kruskal(
-    events[events.heat_tercile == "Low heat"]["recovery_gap"],
-    events[events.heat_tercile == "Medium heat"]["recovery_gap"],
-    events[events.heat_tercile == "High heat"]["recovery_gap"],
-)
-print(f"Kruskal-Wallis H={kw_stat:.3f}, p={kw_p:.4g}")
-```
-
-**Formal interaction test** -- stack both recovery ratios into one
-long-format regression with a `metric x heat` interaction term; if
-significant, this confirms NDVI and sightings respond *differently* to
-heat, as a fully independent cross-check that doesn't rely on the
-`recovery_gap` variable's construction at all:
-
-```{python}
-long_df = pd.concat([
-    events.assign(metric="ndvi", log_ratio=events["log_ndvi_ratio"]),
-    events.assign(metric="sightings", log_ratio=events["log_sight_ratio"]),
-], ignore_index=True)
-m_int = smf.ols("log_ratio ~ heat_anomaly_postfire * C(metric) + log_severity", data=long_df) \
-           .fit(cov_type="cluster", cov_kwds={"groups": long_df["ADM2_NAME"]})
-print(m_int.summary())
-```
-
-```{python}
-#| echo: false
-gap_tests = {
-    "Spearman (gap)": p3,
-    "OLS cluster-robust (gap)": m3.pvalues["heat_anomaly_postfire"],
-    "Kruskal-Wallis (terciles)": kw_p,
-    "Metric x heat interaction": m_int.pvalues["heat_anomaly_postfire:C(metric)[T.sightings]"],
-}
-n_sig = sum(p < 0.05 for p in gap_tests.values())
-print("=== Summary of the gap-focused tests ===")
-for name, p in gap_tests.items():
-    print(f"{name:28s} p={p:.4g}  -> {'significant' if p < 0.05 else 'not significant'}")
-print(f"\n{(boot_slopes > 0).mean()*100:.1f}% of 2,000 cluster-bootstrap resamples give a positive slope "
-      f"(direction-only evidence, no p-value).")
-print(f"\n{n_sig} of the {len(gap_tests)} formal significance tests above currently reach p < 0.05; "
-      f"all {len(gap_tests)} + the bootstrap agree on the *direction* of the effect (positive: heat widens the gap).")
-```
-
-**In the current data, `{python} n_sig` of the `{python} len(gap_tests)`
-formal gap-focused tests reach conventional significance (p < 0.05),
-and `{python} f"{(boot_slopes > 0).mean()*100:.0f}%"` of bootstrap
-resamples agree on the direction.** Every test, significant or not,
-points the same way: hotter post-fire conditions are associated with
-vegetation recovering *relatively better* than wildlife sightings do.
-Whether that reaches formal significance on every specification is
-sensitive to sample size -- read the **direction as the robust part of
-the result**, and the exact p-values as data-size dependent.
-
-### Assumption checks and interpretation
-
-| Test | Key assumptions | Checked / met here? | What it actually tells us |
-|----|----|----|----|
-| **Spearman (individual ratios)** | Monotonic association; observations independent of each other. | Monotonicity is a soft requirement Spearman is built to handle. **Independence is not met**: events cluster within divisions, and this test applies no correction for repeated events sharing a division. | Describes the raw monotonic association only; the cluster-aware OLS below is the more trustworthy version of the same relationship. |
-| **Mann-Whitney U (median split)** | Independent observations; comparable distribution shape across the two groups if read strictly as a median difference. | Independence not met (same clustering caveat). Shapes are reasonably comparable since both groups share the same recovery-ratio construction. One-sided alternative was chosen because the hypothesis has a predicted direction, not fit post hoc. | A distribution-free cross-check on the same median-split logic as the OLS below. |
-| **OLS, cluster-robust SEs (m1, m2)** | Linearity in log-space; no severe multicollinearity; cluster-robust SEs need enough clusters to be asymptotically reliable (rule of thumb 30-50+). | VIF ~1.0 (no multicollinearity). Cluster count for the sightings-side model is well below the usual 30-50+ threshold (see printed `n` above), so its p-value should be read as a plausible, not fully precise, estimate. | Whichever of NDVI/sightings shows the smaller p-value here is the one currently carrying the direct, division-clustering-corrected heat signal. |
-| **Gap regression + Spearman** | Same assumptions as above, applied to the constructed `recovery_gap` variable. | Same small-cluster caveat, since the gap is only defined where a sightings ratio exists. | Direction-consistent across Spearman and OLS; exact significance is sensitive to which test's assumptions you lean on at this sample size. |
-| **Cluster bootstrap** | Resampling whole divisions preserves within-division dependence; needs enough clusters for the resampled distribution to approximate the true one. | Correctly resamples at the division level (addresses the independence problem above). With a small number of divisions, the bootstrap CI width should be trusted more than its exact decimal bounds. | The fraction of resamples with a positive slope is a division-robust vote of confidence in the *direction* of the effect -- arguably the most useful thing this test can tell us at this cluster count. |
-| **Kruskal-Wallis (terciles)** | Independent observations across the 3 groups; roughly similar distribution shape if read as a median difference. | Independence again not met. Group shapes are broadly comparable (all are log-ratio-derived recovery gaps). | With few events per tercile, this test has limited power to detect anything short of a large gap between groups -- non-significance here is consistent with "real but modest effect, underpowered," not necessarily "no effect." |
-| **Metric x heat interaction** | Same linearity/cluster-SE assumptions, *plus* stacking an NDVI row and a sightings row for the same fire event creates two observations that are almost certainly correlated in their errors. | Division-clustering absorbs *some* of this but doesn't explicitly model the event-level pairing (a two-way cluster or an event-level random effect would). | A useful cross-check that doesn't rely on how `recovery_gap` itself is built, but reads with the same small-cluster caution as the OLS models above. |
-
-**Bottom line on assumptions:** every test that reaches
-significance does so on a sightings-side sample well below the
-cluster-count rule of thumb typically used to trust cluster-robust
-inference (the underlying species are only well-recorded in a subset of
-states -- see the Limitations section). That does not mean the results are wrong -- the
-*direction* is consistent across every specification, including tests
-that apply no clustering correction at all -- but the exact p-values
-should be read as indicative rather than precise, and more sightings
-data (more divisions, more years, or broader-range indicator species)
-would do more to firm up this finding than any further modelling choice.
+**Assumption note:** Spearman and the cluster bootstrap make
+essentially no distributional assumptions and are the more robust
+readings here; the OLS models add linearity-in-log-space (a standard,
+defensible choice for ratio data) and rely on cluster-robust standard
+errors, which need more independent divisions than the sightings-side
+sample currently has (VIF confirms no multicollinearity, so that part
+of the model is not the concern). Treat agreement in *direction* across
+all three tests as the trustworthy signal, and any single p-value as
+sample-size dependent rather than definitive.
 
 # Limitations
 
@@ -1186,11 +914,9 @@ would do more to firm up this finding than any further modelling choice.
   filter reduce but do not eliminate this. Treat the sightings result as
   "recorded presence", not population size.
 - **The sightings-side and recovery-gap tests currently run on whichever
-  state(s) clear the `>= 200`-sightings habitat filter.** The six
-  indicator species are essentially
-  south-eastern-Australia forest species (koala, greater glider,
-  yellow-bellied glider, yellow-tailed black-cockatoo, powerful owl,
-  little lorikeet) and are almost never recorded in WA/NT/TAS/SA
+  state(s) clear the `>= 200`-sightings habitat filter** -- printed live
+  above. The six indicator species are essentially south-eastern-
+  Australia forest species and are almost never recorded in WA/NT/TAS/SA
   regardless of how much fire/NDVI data exists there, so this is a
   biogeographic fact rather than a processing bug -- but it does mean
   the sightings-side and recovery-gap conclusions cannot be read as
@@ -1198,27 +924,26 @@ would do more to firm up this finding than any further modelling choice.
   where these particular species occur in numbers.
 - **The 10,000 ha "major fire" threshold, and the `MIN_FIRE_COUNT` /
   `MIN_AVG_AREA_HA` fire-prone-division thresholds, are design
-  choices**, not physical constants -- chosen to separate wildfires from
-  routine hazard-reduction burns and to target divisions with frequent,
-  *significant* fire activity. Victoria's ~440k small recorded burns
-  (median ~11 ha) currently fail the average-area threshold and drop out
-  of the fire-prone list entirely; lowering `MIN_AVG_AREA_HA` would
-  bring it back in.
+  choices**, not physical constants. Victoria's ~440k small recorded
+  burns (median ~11 ha) currently fail the average-area threshold and
+  drop out of the fire-prone list entirely; lowering `MIN_AVG_AREA_HA`
+  would bring it back in.
 - **The recovery ratio is an adapted RRI, not the original Frazier et
   al. (2018) formula.** Their method locates the disturbance trough
   precisely from per-pixel LandTrendr segmentation of Landsat and uses a
-  fixed Y+4/Y+5 recovery window; here the "fire-year" value is just the
+  fixed Y+4/Y+5 recovery window; here the "fire-year" value is the
   annual division-wide composite for that calendar year (a noisier
   proxy for the true trough), and the recovery window is the best
   available of Y+3/Y+4/Y+5 rather than fixed Y+4/Y+5, to keep
   2019-onward fires (including Black Summer) inside the NDVI data's
   2022 cutoff.
 - **The RRI's disturbance-magnitude requirement (a measurable dip in the
-  fire year) sharply cuts the usable sample**, especially for sightings.
-  This is the main reason the direct NDVI-heat and sightings-heat
-  relationships can trade places in significance as more data or states
-  are added, and why the gap-focused tests carry meaningful sampling
-  uncertainty.
+  fire year) sharply cuts the usable sample**, especially for
+  sightings -- see the live counts printed above (`events_all` vs
+  `events`). This is the main reason the direct NDVI-heat and
+  sightings-heat relationships can trade places in significance as more
+  data/states are added, and why the gap-focused tests carry meaningful
+  sampling uncertainty.
 - **The heat-exposure window (`fire_year` to `fire_year+3`) does not
   match the recovery-ratio window** (best available of Y+3/Y+4/Y+5), so
   the two are not measuring exactly the same horizon.
@@ -1228,51 +953,35 @@ would do more to firm up this finding than any further modelling choice.
   whatever happened in between.
 - **Fire-to-division spatial join uses fire-polygon centroids**, and the
   Northern Territory layer's border-adjacent records are not
-  deduplicated against the QLD/WA/SA loaders' own records -- a
-  small double-counting risk near state borders that this report flags
-  rather than resolves.
-- **Q1 and Q2 use different units of analysis** (division
-  vs. event) and different fire-frequency windows (1982-2022 vs. the RRI
-  recovery windows), so their correlation strengths are not directly
-  comparable to each other -- each should be read as its own
-  self-contained test.
+  deduplicated against the QLD/WA/SA loaders' own records -- a small
+  double-counting risk near state borders that this report flags rather
+  than resolves.
 
-# Conclusions
+# Answering the research question
 
-**Q1 -- does fire frequency alone predict weaker recovery?** Not for
-vegetation: NDVI shows essentially no cumulative "weaker recovery each
-time" pattern, rebounding to, or above, pre-fire levels within a
-few years regardless of fire frequency. Wildlife sightings tell a
-different story -- divisions that burn more often tend to lose *share*
-of the regional sighting record over time, consistent with
-habitat *structure* (old trees with hollows) recovering on a much slower
-timescale than leaf-level greenness.
-
-**Q2 -- does post-fire heat exposure widen the vegetation-vs-wildlife
-recovery gap?** The honest answer depends on which signal is trusted,
-and the exact statistical picture is sensitive to how much sightings
-data clears the habitat filter:
+The honest answer depends on which signal is trusted, and the exact
+statistical picture is sensitive to how much sightings data currently
+clears the habitat filter (see Limitations):
 
 - **If you trust satellite greenness alone:** NDVI recovers to, or
   above, its pre-fire baseline within a few years after even the
   largest fires on record.
 - **If you trust the wildlife record:** the sightings-share recovery
   ratio and the vegetation-vs-wildlife recovery gap both move with
-  post-fire heat exposure in every test, and reach formal
-  significance on `{python} n_sig` of `{python} len(gap_tests)` of the
-  gap-focused tests plus a `{python} f"{(boot_slopes > 0).mean()*100:.0f}%"`-consistent
-  bootstrap direction.
+  post-fire heat exposure in every test run above, `{python} sig(p3)`
+  on the Spearman test for the gap and with `{python} f"{boot_pos_pct:.0f}%"`
+  of bootstrap resamples agreeing on the direction.
 
 That divergence is the real finding: a monitoring approach that leans on
 vegetation greenness as a stand-in for "habitat recovered" risks looking
 *more* reassuring, not less, exactly as post-fire conditions get hotter
 for the animals living there -- the most concerning shape a blind spot
 can take, because it erodes the warning signal precisely when the
-warning is most needed. Given the small, geographically narrow
-sightings-side sample currently available, this should be read as
-a real but not yet fully settled signal, not a precisely-estimated
-effect size -- and one worth re-testing as sightings data grows across
-more of the country.
+warning is most needed. Given the small, geographically-narrow
+sightings-side sample currently available, this should be read as a
+real but not yet fully settled signal, not a precisely-estimated effect
+size -- and one worth re-testing as sightings data grows across more of
+the country.
 
 # Appendix A: feature definitions
 
@@ -1289,8 +998,7 @@ more of the country.
 | **Recovery gap** | `log(NDVI recovery ratio) - log(sightings recovery ratio)`. Zero = vegetation and wildlife recovered by the same proportional amount; positive = vegetation recovered relatively better than wildlife. |
 | **Fire severity (`log_severity`)** | `log(maximum single fire area in hectares recorded in that division-year)` -- log-transformed because fire size spans several orders of magnitude; a regression control variable. |
 | **Habitat division filter** | Only divisions with `>= 200` total sightings across the whole record are included in sightings-based tests, to exclude LGAs where these species barely occur and the sightings ratio would just be noise. |
-| **Heat tercile** | Events split into three equal-sized groups (Low/Medium/High) by post-fire heat anomaly, used for non-parametric comparisons. |
-| **Major fires per decade** | Count of distinct years, 1982-2022, in which a division had `>= 1` major fire, divided by 4.1. |
+| **Heat tercile** | Events split into three equal-sized groups (Low/Medium/High) by post-fire heat anomaly, used for the tercile chart above. |
 
 # References
 
