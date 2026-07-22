@@ -4,6 +4,10 @@ pandas
 scipy
 statsmodels
 
+# NetCDF processing
+xarray
+netCDF4
+
 # Visualisation
 matplotlib
 plotly
@@ -12,8 +16,15 @@ plotly
 geopandas
 
 # Quarto / Jupyter execution
-notebook
 jupyter
+notebook
 nbclient
 nbformat
 ipykernel
+
+# Atlas of Living Australia API
+galah-python
+
+# Google Earth Engine
+earthengine-api
+geemap
