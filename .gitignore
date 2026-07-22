@@ -1,4 +1,12 @@
-data/*
+data/acorn_sat_data
+data/NSW_fire_history
+data/QLD_fire_history
+data/VIC_fire_history
+data/NA_fire_history
+data/SA_fire_history
+data/WA_fire_history
+data/TAS_fire_history
+data/au_admin2_boundaries.geojson
 AusENDVI-clim_MCD43A4_gapfilled_1982_2022_0.1.0.nc
 .Rhistory
 .Rproj.user/
