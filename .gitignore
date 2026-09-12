@@ -10,4 +10,6 @@ data/au_admin2_boundaries.geojson
 data/*
 AusENDVI-clim_MCD43A4_gapfilled_1982_2022_0.1.0.nc
 .Rhistory
-.Rproj.user/
+.Rproj.user/drive-download-20260722T094411Z-1-001/canopy_indicators_all_states.csv
+drive-download-20260722T094411Z-1-001/animal_sightings.csv
+drive-download-20260722T094411Z-1-001/
